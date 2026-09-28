@@ -33,9 +33,10 @@ from agent.competitor_analyzer import analyze_competitors
 from agent.topic_selector import select_topics
 from agent.article_generator import generate_article
 from agent.publisher import publish_article, get_blog_pageviews, get_live_blogger_post_titles
-from agent.database import add_article, get_recent_titles, get_all_published_titles, find_duplicate_in_published
+from agent.database import add_article, get_recent_titles, get_all_published_titles, find_duplicate_in_published, get_stats
 from agent.social_promoter import format_github_step_summary, record_social_promotion
 from agent.notifier import notify_all
+
 
 
 
@@ -238,9 +239,9 @@ def run() -> int:
             except Exception as e:
                 logger.warning("Notification error: %s", e)
         else:
-            logger.warning("❌ Article %d failed to publish.", i)
+            logger.warning("❌ Candidate %d failed to publish.", cand_idx)
 
-        if i < len(topics):
+        if published_count < target_count and cand_idx < len(candidate_pool):
             time.sleep(10)
 
     # ── Summary & GitHub Step Summary ─────────────────────────────────────────
@@ -249,7 +250,7 @@ def run() -> int:
     logger.info("\n" + "=" * 60)
     logger.info("📊 Run Summary")
     logger.info("   Edition: %s", slot.upper())
-    logger.info("   Published: %d/%d articles", published_count, len(topics))
+    logger.info("   Published: %d/%d articles", published_count, target_count)
     logger.info("   Total articles ever: %d", stats.get("total", 0))
     logger.info("   Duration: %ds", duration)
     logger.info("=" * 60)
@@ -259,7 +260,7 @@ def run() -> int:
     if summary_path and os.path.exists(os.path.dirname(summary_path)):
         try:
             with open(summary_path, "a", encoding="utf-8") as f:
-                f.write(f"\n# 🤖 AI Income Lab — [{slot.upper()}] Edition Published\n\n")
+                f.write(f"\n# 🌐 TrendPulse Daily — [{slot.upper()}] Edition Published\n\n")
                 f.write(f"- **Edition**: `{slot.capitalize()}` ({slot_info.get('name', '')})\n")
                 f.write(f"- **Published Today**: `{published_count}` article(s)\n")
                 f.write(f"- **Total Blog Posts**: `{stats.get('total', 0)}`\n\n")
