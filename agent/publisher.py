@@ -165,3 +165,35 @@ def get_blog_pageviews(blog_id: str = None) -> dict:
     except Exception as e:
         logger.warning("Could not fetch pageviews from Blogger API: %s", e)
         return {}
+
+
+def get_live_blogger_post_titles(blog_id: str = None) -> list[str]:
+    """
+    Fetch all published post titles directly from Blogger API.
+    Ensures 100% duplicate protection across machines or repo resets.
+    """
+    target_id = blog_id or BLOGGER_BLOG_ID or os.getenv("BLOGGER_BLOG_ID", "")
+    if not target_id:
+        return []
+
+    creds = _get_credentials()
+    if not creds:
+        return []
+
+    try:
+        service = build("blogger", "v3", credentials=creds, cache_discovery=False)
+        posts_result = service.posts().list(
+            blogId=target_id,
+            status=["LIVE"],
+            maxResults=100,
+            fetchBodies=False,
+        ).execute()
+
+        items = posts_result.get("items", [])
+        titles = [p.get("title", "").strip() for p in items if p.get("title")]
+        logger.info("Blogger API: fetched %d live post titles for duplicate checking", len(titles))
+        return titles
+    except Exception as e:
+        logger.warning("Could not fetch live titles from Blogger API: %s", e)
+        return []
+

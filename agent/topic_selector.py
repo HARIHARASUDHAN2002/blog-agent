@@ -83,6 +83,7 @@ def _niche_relevance(title: str, niche_seeds: list[str]) -> float:
 
 
 from config.settings import SLOT_CONFIGS
+from agent.database import find_duplicate_in_published, get_all_published_titles
 
 
 def select_topics(
@@ -90,38 +91,38 @@ def select_topics(
     competitor_analysis: dict,
     n: int = 1,
     slot: str = "morning",
+    existing_titles: list[str] | None = None,
 ) -> list[dict]:
     """
-    Select the best N topics to write about today.
+    Evaluate trends across ALL THREE time horizons (24 Hours, Last Week, Last Month)
+    in a single unified pool, strictly verify no duplicate exists, and pick the single best topic.
 
     Returns list of dicts:
     {
         "topic":   str,       # clean blog topic
         "keywords": [str],    # target SEO keywords
-        "niche":   str,       # niche id
-        "format":  str,       # suggested format (how_to / market_breakdown / case_study)
+        "niche":   str,       # universal niche id
+        "format":  str,       # format matched to horizon
+        "horizon": str,       # '24h', 'week', or 'month'
         "score":   float,
     }
     """
     niches_cfg = _load_niches()
     niches = niches_cfg.get("niches", [])
-    recent_titles = get_recent_titles(40)
+    
+    # Load all published titles from DB and caller (e.g. Blogger live API)
+    published_titles = list(dict.fromkeys((existing_titles or []) + get_all_published_titles()))
     recent_keywords = set(get_recent_keywords(60))
-
-    # Slot configuration
-    slot_cfg = SLOT_CONFIGS.get(slot, SLOT_CONFIGS.get("morning", {}))
-    preferred_format = slot_cfg.get("format", "how_to")
-    preferred_niche  = slot_cfg.get("niche_preference", "ai_finance_overlap")
 
     # Build competitor word sets for gap analysis
     comp_titles = competitor_analysis.get("recent_titles", [])
     comp_word_sets = [set(t.lower().split()) for t in comp_titles if t]
-    hot_keywords = set(competitor_analysis.get("patterns", {}).get("hot_keywords", []))
 
-    # Rotate formats across articles so no two articles ever use the same format
-    format_rotation = [preferred_format, "how_to", "market_breakdown", "case_study", "listicle", "review"]
-    # Remove duplicates preserving order
-    format_rotation = list(dict.fromkeys(format_rotation))
+    horizon_format_map = {
+        "24h": "market_breakdown",   # Real-time trend pulse & immediate news analysis
+        "week": "how_to",            # Weekly deep dive, teardown & practical guide
+        "month": "case_study",       # Big picture explainer & future discovery
+    }
 
     candidates = []
 
@@ -131,21 +132,24 @@ def select_topics(
             continue
 
         topic = _title_to_blog_topic(raw_title)
-        topic_words = set(topic.lower().split())
+        horizon = trend.get("horizon", "24h")
 
-        # Skip if already published something too similar
-        pub_overlap = _published_overlap_score(topic_words, recent_titles)
-        if pub_overlap >= 1.0:
+        # STRICT DUPLICATE CHECK: Verify it has not been published already
+        is_dup, matched_title, dup_score = find_duplicate_in_published(topic, published_titles)
+        if is_dup:
+            logger.info("🚫 Discarding duplicate candidate '%s' (matches: '%s', score=%.2f)", topic[:50], matched_title[:50], dup_score)
             continue
+
+        topic_words = set(topic.lower().split())
 
         # Competitor gap score (lower overlap = better opportunity)
         comp_overlap = _overlap_score(topic_words, comp_word_sets)
         gap_score = 1.0 - comp_overlap        # higher = bigger gap
 
-        # Trend score (normalised to 0-1)
+        # Trend viral score (normalized 0-1)
         trend_score = min(trend.get("score", 1) / 500, 1.0)
 
-        # Niche relevance
+        # Niche relevance across the 4 universal pillars
         best_niche = "tech_innovation"
         best_niche_score = 0.0
         for niche in niches:
@@ -154,24 +158,25 @@ def select_topics(
                 best_niche_score = rel
                 best_niche = niche["id"]
 
-        # Keyword freshness (penalise if we've used same keywords recently)
+        # Keyword freshness (penalize if we've used same keywords recently)
         kw_penalty = sum(1 for w in topic_words if w in recent_keywords) / max(len(topic_words), 1)
-        freshness = 1.0 - (kw_penalty * 0.4)
+        freshness = 1.0 - (kw_penalty * 0.35)
+
+        # Horizon weight: Give balanced chance to 24h breaking news, weekly teardowns, and monthly breakthroughs
+        horizon_boost = {
+            "24h": 1.10,    # Fresh daily pulse
+            "week": 1.05,   # Tested weekly momentum
+            "month": 1.00,  # Evergreen monthly depth
+        }.get(horizon, 1.00)
 
         total_score = (
-            trend_score   * 0.30 +
-            gap_score     * 0.35 +
+            trend_score      * 0.35 +
+            gap_score        * 0.30 +
             best_niche_score * 0.20 +
-            freshness     * 0.15
-        )
+            freshness        * 0.15
+        ) * horizon_boost
 
-        # Horizon match bonus (Morning -> 24h, Noon -> Week, Evening -> Month)
-        horizon = trend.get("horizon", "24h")
-        target_horizon = slot_cfg.get("horizon", "24h")
-        if horizon == target_horizon:
-            total_score *= 1.25
-
-        # Extract target SEO keywords
+        # Target SEO keywords
         niche_data = next((n for n in niches if n["id"] == best_niche), {})
         niche_keywords = niche_data.get("target_keywords", [])
         topic_keywords = [w for w in topic_words if len(w) > 4 and w not in {
@@ -183,34 +188,27 @@ def select_topics(
             "topic": topic,
             "keywords": keywords,
             "niche": best_niche,
-            "format": preferred_format,
+            "format": horizon_format_map.get(horizon, "how_to"),
             "horizon": horizon,
             "score": round(total_score, 4),
             "source": trend.get("source", "unknown"),
         })
 
-    # Boost candidates matching the slot's preferred niche
-    for c in candidates:
-        if c["niche"] == preferred_niche:
-            c["score"] = round(c["score"] * 1.25, 4)
-
-    # Sort by score, take top N (ensuring niche variety)
+    # Sort all candidates strictly by score across all 3 horizons
     candidates.sort(key=lambda x: x["score"], reverse=True)
 
-    # Pick top candidates and assign distinct formats
     selected = []
     used_niches: set = set()
     for c in candidates:
         if len(selected) >= n:
             break
-        # Allow max 2 from same niche
-        if sum(1 for s in selected if s["niche"] == c["niche"]) >= 2:
+        # Allow variety if generating multiple articles
+        if n > 1 and c["niche"] in used_niches and len(candidates) > n:
             continue
-        c["format"] = format_rotation[len(selected) % len(format_rotation)]
         selected.append(c)
         used_niches.add(c["niche"])
 
-    # If not enough scored candidates, pad with niche seed topics
+    # Fallback to seeds only if no trend candidate survived
     if len(selected) < n:
         for niche in niches:
             if len(selected) >= n:
@@ -220,18 +218,29 @@ def select_topics(
             for seed in seeds:
                 if len(selected) >= n:
                     break
-                if not _published_overlap_score(set(seed.lower().split()), recent_titles):
+                is_dup, _, _ = find_duplicate_in_published(seed, published_titles)
+                if not is_dup:
                     selected.append({
                         "topic": seed,
                         "keywords": niche.get("target_keywords", [])[:3],
                         "niche": niche["id"],
                         "format": "listicle",
+                        "horizon": "month",
                         "score": 0.1,
                         "source": "seed",
                     })
 
-    logger.info("Selected %d topics:", len(selected))
+    logger.info("Selected %d best topic(s) across 24h, week, and month horizons:", len(selected))
     for i, t in enumerate(selected, 1):
-        logger.info("  %d. [%s] %s (score=%.3f)", i, t["niche"], t["topic"][:60], t["score"])
+        logger.info(
+            "  %d. [%s | %s | %s] %s (score=%.3f)",
+            i,
+            t.get("horizon", "all").upper(),
+            t["niche"],
+            t["format"],
+            t["topic"][:60],
+            t["score"],
+        )
 
     return selected[:n]
+

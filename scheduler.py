@@ -32,10 +32,11 @@ from agent.trend_fetcher import fetch_all_trends
 from agent.competitor_analyzer import analyze_competitors
 from agent.topic_selector import select_topics
 from agent.article_generator import generate_article
-from agent.publisher import publish_article, get_blog_pageviews
-from agent.database import add_article, get_recent_titles, get_stats
+from agent.publisher import publish_article, get_blog_pageviews, get_live_blogger_post_titles
+from agent.database import add_article, get_recent_titles, get_all_published_titles, find_duplicate_in_published
 from agent.social_promoter import format_github_step_summary, record_social_promotion
 from agent.notifier import notify_all
+
 
 
 def _detect_slot() -> str:
@@ -87,13 +88,19 @@ def run() -> int:
         logger.error("Configuration error — aborting run.")
         return 0
 
+    # ── Gather all previously published titles for strict duplicate prevention ──
+    live_blogger_titles = get_live_blogger_post_titles()
+    db_titles = get_all_published_titles()
+    all_published_titles = list(dict.fromkeys(live_blogger_titles + db_titles))
+    logger.info("   Tracked published articles: %d (Live Blogger: %d, DB: %d)", len(all_published_titles), len(live_blogger_titles), len(db_titles))
+
     recent_titles = get_recent_titles(30)
 
-    # ── Step 1: Fetch trends ──────────────────────────────────────────────────
-    logger.info("\n📈 Step 1/4: Fetching worldwide trends...")
+    # ── Step 1: Fetch trends across 24h, Week, and Month ─────────────────────
+    logger.info("\n📈 Step 1/4: Fetching trends across 24h, Week, and Month...")
     try:
         trends = fetch_all_trends()
-        logger.info("   Found %d trending topics", len(trends))
+        logger.info("   Found %d trending topics across all horizons", len(trends))
     except Exception as e:
         logger.error("Trend fetching failed: %s", e)
         trends = []
@@ -111,45 +118,81 @@ def run() -> int:
         logger.error("Competitor analysis failed: %s", e)
         competitor_data = {"recent_titles": [], "patterns": {}, "covered_keywords": {}, "by_niche": {}}
 
-    # ── Step 3: Select topic for this slot ────────────────────────────────────
+    # ── Step 3: Evaluate all 3 horizons & pick the best unwritten topic ───────
     target_count = ARTICLES_PER_RUN
-    logger.info("\n🎯 Step 3/4: Selecting %d topic(s) for [%s] edition...", target_count, slot.upper())
+    logger.info("\n🎯 Step 3/4: Comparing 24h, Week, and Month trends to pick the best topic...")
     try:
-        topics = select_topics(trends, competitor_data, n=target_count, slot=slot)
-        logger.info("   Selected %d topic(s)", len(topics))
+        # Request extra ranked candidates so if one matches an existing post, backups are ready
+        candidate_pool = select_topics(
+            trends=trends,
+            competitor_analysis=competitor_data,
+            n=max(target_count * 4, 6),
+            slot=slot,
+            existing_titles=all_published_titles,
+        )
+        logger.info("   Ranked %d candidate topics across horizons", len(candidate_pool))
     except Exception as e:
         logger.error("Topic selection failed: %s", e)
         return 0
 
-    if not topics:
-        logger.error("No topics selected — skipping run.")
+    if not candidate_pool:
+        logger.error("No valid topics found — skipping run.")
         return 0
 
-    # ── Step 4: Generate + publish articles ───────────────────────────────────
-    logger.info("\n✍️  Step 4/4: Generating and publishing article(s)...")
+    # ── Step 4: Verify uniqueness, then generate + publish ─────────────────────
+    logger.info("\n✍️  Step 4/4: Verifying uniqueness and generating article...")
     published_count = 0
     social_promotions = []
 
-    for i, topic in enumerate(topics, 1):
-        logger.info("\n--- Article %d/%d ---", i, len(topics))
-        logger.info("Topic: %s", topic["topic"])
-        logger.info("Niche: %s | Format: %s | Slot: %s", topic["niche"], topic["format"], slot)
+    for cand_idx, topic in enumerate(candidate_pool, 1):
+        if published_count >= target_count:
+            break
 
-        # Generate article with slot archetype and anti-AI filter
+        cand_title = topic["topic"]
+        cand_horizon = topic.get("horizon", "all").upper()
+        logger.info("\n--- Evaluating Candidate %d/%d [%s] ---", cand_idx, len(candidate_pool), cand_horizon)
+        logger.info("Topic: %s", cand_title)
+        logger.info("Pillar: %s | Format: %s | Horizon: %s", topic["niche"], topic["format"], cand_horizon)
+
+        # ── Pre-generation duplicate verification ──
+        is_dup, matched_title, dup_score = find_duplicate_in_published(cand_title, all_published_titles)
+        if is_dup:
+            logger.warning(
+                "🚫 SKIP: Candidate '%s' was already created! Matches: '%s' (similarity: %.2f)",
+                cand_title[:50],
+                matched_title[:50],
+                dup_score,
+            )
+            continue
+
+        # Generate article with verified unique topic
+        logger.info("✅ Verified unique! Generating article with Gemini...")
         try:
             article = generate_article(
                 topic=topic,
                 competitor_analysis=competitor_data,
                 slot=slot,
-                recent_titles=recent_titles,
+                recent_titles=all_published_titles,
             )
         except Exception as e:
             logger.error("Article generation failed: %s", e)
             article = None
 
         if not article:
-            logger.warning("Skipping topic (generation failed): %s", topic["topic"])
+            logger.warning("Skipping candidate (generation failed): %s", cand_title)
             time.sleep(3)
+            continue
+
+        # ── Post-generation title uniqueness check ──
+        generated_title = article.get("title", cand_title)
+        is_post_dup, matched_title, dup_score = find_duplicate_in_published(generated_title, all_published_titles)
+        if is_post_dup:
+            logger.warning(
+                "🚫 SKIP: Generated title '%s' is too similar to existing '%s' (similarity: %.2f)",
+                generated_title[:50],
+                matched_title[:50],
+                dup_score,
+            )
             continue
 
         # Publish to Blogger
@@ -163,13 +206,15 @@ def run() -> int:
             article["url"] = url
             # Record in database
             add_article(
-                title=article.get("title", topic["topic"]),
+                title=generated_title,
                 url=url,
                 niche=topic["niche"],
                 keywords=topic.get("keywords", []),
             )
+            all_published_titles.append(generated_title)
             published_count += 1
-            logger.info("✅ Article %d published: %s", i, url)
+            logger.info("✅ Article %d/%d published: %s", published_count, target_count, url)
+
 
             # Generate social media syndication kit
             try:
