@@ -35,6 +35,7 @@ from agent.article_generator import generate_article
 from agent.publisher import publish_article
 from agent.database import add_article, get_recent_titles, get_stats
 from agent.social_promoter import format_github_step_summary, record_social_promotion
+from agent.notifier import notify_all
 
 
 def _detect_slot() -> str:
@@ -177,6 +178,18 @@ def run() -> int:
                 logger.info("📣 Social promotion kit generated for Twitter and LinkedIn/Reddit")
             except Exception as e:
                 logger.warning("Could not generate social promo: %s", e)
+
+            # Send instant WhatsApp notification
+            try:
+                current_stats = get_stats()
+                notify_all(
+                    title=article.get("title", topic["topic"]),
+                    url=url,
+                    slot=slot,
+                    total_posts=current_stats.get("total", published_count),
+                )
+            except Exception as e:
+                logger.warning("Notification error: %s", e)
         else:
             logger.warning("❌ Article %d failed to publish.", i)
 
