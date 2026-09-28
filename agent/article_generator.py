@@ -99,9 +99,52 @@ RETURN FORMAT — Respond with valid JSON only (no markdown wrapper):
 }}"""
 
 
+_cached_models: list[str] = []
+
+
+def _get_available_models(api_key: str) -> list[str]:
+    """Dynamically query Google Gemini API for available models that support generateContent."""
+    global _cached_models
+    if _cached_models:
+        return _cached_models
+
+    discovered = []
+    try:
+        url = f"{GEMINI_REST_BASE}?key={api_key}"
+        resp = requests.get(url, timeout=15)
+        if resp.status_code == 200:
+            for m in resp.json().get("models", []):
+                methods = m.get("supportedGenerationMethods", [])
+                if "generateContent" in methods:
+                    name = m.get("name", "").replace("models/", "")
+                    if "gemini" in name:
+                        discovered.append(name)
+    except Exception as e:
+        logger.warning("Could not dynamically query Gemini models: %s", e)
+
+    if discovered:
+        # Prioritize flash models, sorted descending (e.g. 2.5 before 2.0 before 1.5)
+        flash = sorted([m for m in discovered if "flash" in m], reverse=True)
+        others = sorted([m for m in discovered if "flash" not in m], reverse=True)
+        _cached_models = flash + others
+        logger.info("Discovered available Gemini models: %s", _cached_models[:5])
+        return _cached_models
+
+    _cached_models = [
+        GEMINI_MODEL,
+        GEMINI_FALLBACK,
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
+        "gemini-1.5-flash-latest",
+        "gemini-1.5-flash",
+        "gemini-pro",
+    ]
+    return _cached_models
+
+
 def _call_gemini(prompt: str, api_key: str) -> dict | None:
     """Call Gemini REST API, return parsed JSON or None."""
-    models = [GEMINI_MODEL, GEMINI_FALLBACK]
+    models = _get_available_models(api_key)
 
     for model in models:
         url = f"{GEMINI_REST_BASE}/{model}:generateContent?key={api_key}"
@@ -141,7 +184,7 @@ def _call_gemini(prompt: str, api_key: str) -> dict | None:
             logger.warning("Gemini HTTP error [%s]: %s", model, e)
         except Exception as e:
             logger.warning("Gemini call failed [%s]: %s", model, e)
-        time.sleep(2)
+        time.sleep(1)
 
     return None
 
