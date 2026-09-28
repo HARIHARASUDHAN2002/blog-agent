@@ -15,12 +15,9 @@ import requests
 logger = logging.getLogger(__name__)
 
 
-def send_whatsapp_notification(title: str, url: str, slot: str, total_posts: int) -> bool:
+def send_whatsapp_notification(title: str, url: str, slot: str, total_posts: int, traffic_stats: dict = None) -> bool:
     """
-    Send a WhatsApp notification using CallMeBot (100% Free personal API).
-    Requires environment variables:
-      - WHATSAPP_PHONE (e.g. +919876543210 or 919876543210)
-      - WHATSAPP_APIKEY (obtained by sending 1 message to CallMeBot)
+    Send a WhatsApp notification with live overall view counts.
     """
     phone = os.getenv("WHATSAPP_PHONE", "").strip().replace(" ", "").replace("-", "")
     apikey = os.getenv("WHATSAPP_APIKEY", "").strip()
@@ -29,19 +26,21 @@ def send_whatsapp_notification(title: str, url: str, slot: str, total_posts: int
         logger.info("WhatsApp notifications not configured (WHATSAPP_PHONE / WHATSAPP_APIKEY not set).")
         return False
 
-    # Format numbers
-    progress_pct = min(int((total_posts / 25) * 100), 100)
-    remaining_posts = max(25 - total_posts, 0)
+    stats = traffic_stats or {}
+    all_time_views = stats.get("all_time", "N/A")
+    last_7d_views  = stats.get("last_7_days", "N/A")
+    posts_count    = stats.get("total_posts", total_posts)
 
     message = (
         f"🚀 *AI Income Lab — New Article Live!*\n\n"
         f"📌 *Title:* {title}\n"
         f"🕒 *Edition:* {slot.capitalize()}\n"
         f"🔗 *Read Post:* {url}\n\n"
-        f"📊 *AdSense Goal Progress:*\n"
-        f"• Total Posts: {total_posts} / 25 ({progress_pct}%)\n"
-        f"• Remaining for AdSense: {remaining_posts} posts\n\n"
-        f"💡 *Action:* Tap the link and share it on your status or social media for instant views!"
+        f"📈 *Live Overall Blog Growth & Views:*\n"
+        f"• 👁️ *Total Views (All-Time):* {all_time_views} views\n"
+        f"• 📊 *Views (Last 7 Days):* {last_7d_views} views\n"
+        f"• 📝 *Total Articles Published:* {posts_count} posts\n\n"
+        f"💡 *Action:* Tap the link to view your latest article!"
     )
 
     try:
@@ -59,7 +58,7 @@ def send_whatsapp_notification(title: str, url: str, slot: str, total_posts: int
         return False
 
 
-def send_telegram_notification(title: str, url: str, slot: str, total_posts: int) -> bool:
+def send_telegram_notification(title: str, url: str, slot: str, total_posts: int, traffic_stats: dict = None) -> bool:
     """Optional backup: Send instant notification via Telegram Bot."""
     token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
     chat_id = os.getenv("TELEGRAM_CHAT_ID", "").strip()
@@ -67,12 +66,20 @@ def send_telegram_notification(title: str, url: str, slot: str, total_posts: int
     if not token or not chat_id:
         return False
 
+    stats = traffic_stats or {}
+    all_time_views = stats.get("all_time", "N/A")
+    last_7d_views  = stats.get("last_7_days", "N/A")
+    posts_count    = stats.get("total_posts", total_posts)
+
     message = (
         f"🚀 <b>AI Income Lab — New Article Live!</b>\n\n"
         f"📌 <b>Title:</b> {title}\n"
         f"🕒 <b>Edition:</b> {slot.capitalize()}\n"
         f"🔗 <a href='{url}'>Read Article</a>\n\n"
-        f"📊 <b>Total Published:</b> {total_posts} posts"
+        f"📈 <b>Live Blog Growth:</b>\n"
+        f"• 👁️ <b>Total Views (All-Time):</b> {all_time_views}\n"
+        f"• 📊 <b>Views (Last 7 Days):</b> {last_7d_views}\n"
+        f"• 📝 <b>Total Articles:</b> {posts_count}"
     )
 
     try:
@@ -85,7 +92,7 @@ def send_telegram_notification(title: str, url: str, slot: str, total_posts: int
         return False
 
 
-def notify_all(title: str, url: str, slot: str, total_posts: int):
+def notify_all(title: str, url: str, slot: str, total_posts: int, traffic_stats: dict = None):
     """Attempt WhatsApp first, then Telegram if configured."""
-    send_whatsapp_notification(title, url, slot, total_posts)
-    send_telegram_notification(title, url, slot, total_posts)
+    send_whatsapp_notification(title, url, slot, total_posts, traffic_stats=traffic_stats)
+    send_telegram_notification(title, url, slot, total_posts, traffic_stats=traffic_stats)

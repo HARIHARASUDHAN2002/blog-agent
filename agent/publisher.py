@@ -113,3 +113,55 @@ def publish_article(article: dict) -> str | None:
     except Exception as e:
         logger.error("Blogger publish failed: %s", e)
         return None
+
+
+def get_blog_pageviews(blog_id: str = None) -> dict:
+    """
+    Fetch live total views across all blog posts directly from Blogger API.
+    Returns:
+      {
+        "all_time": int,
+        "last_7_days": int,
+        "last_30_days": int,
+        "total_posts": int,
+      }
+    """
+    target_id = blog_id or BLOGGER_BLOG_ID or os.getenv("BLOGGER_BLOG_ID", "")
+    if not target_id:
+        return {}
+
+    creds = _get_credentials()
+    if not creds:
+        return {}
+
+    try:
+        service = build("blogger", "v3", credentials=creds, cache_discovery=False)
+        pv = service.pageViews().get(
+            blogId=target_id,
+            range=["all", "7DAYS", "30DAYS"],
+        ).execute()
+
+        counts = {
+            item.get("timeRange"): int(item.get("count", "0"))
+            for item in pv.get("counts", [])
+        }
+
+        blog = service.blogs().get(blogId=target_id).execute()
+        total_posts = blog.get("posts", {}).get("totalItems", 0)
+
+        data = {
+            "all_time": counts.get("ALL_TIME", 0),
+            "last_7_days": counts.get("SEVEN_DAYS", 0),
+            "last_30_days": counts.get("THIRTY_DAYS", 0),
+            "total_posts": total_posts,
+        }
+        logger.info(
+            "Blogger live traffic stats: all_time=%d, last_7d=%d, posts=%d",
+            data["all_time"],
+            data["last_7_days"],
+            data["total_posts"],
+        )
+        return data
+    except Exception as e:
+        logger.warning("Could not fetch pageviews from Blogger API: %s", e)
+        return {}

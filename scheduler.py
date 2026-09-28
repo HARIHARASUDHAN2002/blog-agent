@@ -32,7 +32,7 @@ from agent.trend_fetcher import fetch_all_trends
 from agent.competitor_analyzer import analyze_competitors
 from agent.topic_selector import select_topics
 from agent.article_generator import generate_article
-from agent.publisher import publish_article
+from agent.publisher import publish_article, get_blog_pageviews
 from agent.database import add_article, get_recent_titles, get_stats
 from agent.social_promoter import format_github_step_summary, record_social_promotion
 from agent.notifier import notify_all
@@ -179,14 +179,16 @@ def run() -> int:
             except Exception as e:
                 logger.warning("Could not generate social promo: %s", e)
 
-            # Send instant WhatsApp notification
+            # Send instant WhatsApp notification with live overall view counts
             try:
                 current_stats = get_stats()
+                traffic_stats = get_blog_pageviews()
                 notify_all(
                     title=article.get("title", topic["topic"]),
                     url=url,
                     slot=slot,
                     total_posts=current_stats.get("total", published_count),
+                    traffic_stats=traffic_stats,
                 )
             except Exception as e:
                 logger.warning("Notification error: %s", e)
