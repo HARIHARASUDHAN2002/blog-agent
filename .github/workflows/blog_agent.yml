@@ -1,0 +1,57 @@
+name: 🤖 AI Income Lab — Daily Blog Agent
+
+on:
+  # Runs every day at 9:00 AM IST (3:30 UTC)
+  schedule:
+    - cron: '30 3 * * *'
+
+  # Allow manual trigger from GitHub UI (useful for testing)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (skip publishing)'
+        required: false
+        default: 'false'
+
+jobs:
+  run-blog-agent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      contents: write     # needed to commit database updates back to repo
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐍 Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 📦 Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: 🔑 Decode Blogger token from secret
+        run: |
+          echo "${{ secrets.BLOGGER_TOKEN_B64 }}" | base64 -d > token.json
+          echo "✅ token.json decoded successfully"
+
+      - name: 🚀 Run blog agent
+        env:
+          GEMINI_API_KEY:    ${{ secrets.GEMINI_API_KEY }}
+          BLOGGER_BLOG_ID:   ${{ secrets.BLOGGER_BLOG_ID }}
+        run: python scheduler.py
+
+      - name: 💾 Commit updated article database
+        if: always()   # run even if scheduler exits with error (partial success)
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name  "github-actions[bot]"
+          git add database/published_topics.json
+          git diff --staged --quiet || git commit -m "🤖 Auto: update published_topics.json [skip ci]"
+          git push

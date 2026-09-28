@@ -1,0 +1,63 @@
+{
+  "_comment": "Niche definitions for AI Income Lab. Each niche has topic seeds and target keywords.",
+  "primary_niche": "AI Tools & Personal Finance",
+  "niches": [
+    {
+      "id": "ai_tools",
+      "name": "AI Tools & Productivity",
+      "weight": 0.35,
+      "topic_seeds": [
+        "best free AI tools",
+        "AI productivity tools",
+        "ChatGPT alternatives",
+        "AI writing tools",
+        "AI for beginners",
+        "free AI image generators",
+        "AI automation tools",
+        "AI tools for students",
+        "AI tools for freelancers",
+        "AI coding assistants"
+      ],
+      "target_keywords": ["AI tools", "free AI", "artificial intelligence", "ChatGPT", "Gemini AI"],
+      "affiliate_categories": ["software", "saas", "tools"]
+    },
+    {
+      "id": "personal_finance",
+      "name": "Personal Finance & Side Income",
+      "weight": 0.35,
+      "topic_seeds": [
+        "side income ideas",
+        "passive income with AI",
+        "how to make money online",
+        "personal finance tips",
+        "investing for beginners",
+        "budgeting with AI",
+        "freelancing tips",
+        "remote work income",
+        "digital products to sell",
+        "stock market basics"
+      ],
+      "target_keywords": ["side income", "passive income", "make money online", "personal finance", "investing"],
+      "affiliate_categories": ["finance", "investment", "courses"]
+    },
+    {
+      "id": "ai_finance_overlap",
+      "name": "AI for Money & Business",
+      "weight": 0.30,
+      "topic_seeds": [
+        "AI for personal finance",
+        "automate income with AI",
+        "AI stock analysis tools",
+        "AI business ideas",
+        "AI side hustle ideas",
+        "AI for budgeting",
+        "AI tools to save money",
+        "AI marketing tools free",
+        "AI content creation for income",
+        "AI automation side income"
+      ],
+      "target_keywords": ["AI income", "AI money", "AI business", "automate income", "AI side hustle"],
+      "affiliate_categories": ["finance", "software", "courses"]
+    }
+  ]
+}

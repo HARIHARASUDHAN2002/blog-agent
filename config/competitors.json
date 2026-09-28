@@ -1,0 +1,65 @@
+{
+  "_comment": "Competitor blog RSS feeds. Agent monitors these daily to learn what's working and find content gaps.",
+  "competitors": [
+    {
+      "name": "TechCrunch AI",
+      "rss": "https://techcrunch.com/category/artificial-intelligence/feed/",
+      "niche": "ai_tools",
+      "authority": "high"
+    },
+    {
+      "name": "VentureBeat AI",
+      "rss": "https://venturebeat.com/category/ai/feed/",
+      "niche": "ai_tools",
+      "authority": "high"
+    },
+    {
+      "name": "The Rundown AI",
+      "rss": "https://www.therundown.ai/rss",
+      "niche": "ai_tools",
+      "authority": "medium"
+    },
+    {
+      "name": "MakeUseOf AI",
+      "rss": "https://www.makeuseof.com/category/artificial-intelligence/feed/",
+      "niche": "ai_tools",
+      "authority": "medium"
+    },
+    {
+      "name": "NerdWallet",
+      "rss": "https://www.nerdwallet.com/blog/feed/",
+      "niche": "personal_finance",
+      "authority": "high"
+    },
+    {
+      "name": "The Motley Fool",
+      "rss": "https://www.fool.com/feeds/index.aspx",
+      "niche": "personal_finance",
+      "authority": "high"
+    },
+    {
+      "name": "Side Hustle Nation",
+      "rss": "https://www.sidehustlenation.com/feed/",
+      "niche": "personal_finance",
+      "authority": "medium"
+    },
+    {
+      "name": "Smart Passive Income",
+      "rss": "https://www.smartpassiveincome.com/feed/",
+      "niche": "personal_finance",
+      "authority": "high"
+    },
+    {
+      "name": "Investopedia",
+      "rss": "https://www.investopedia.com/feedbuilder/feed/getfeed?feedName=rss_headline",
+      "niche": "personal_finance",
+      "authority": "high"
+    },
+    {
+      "name": "How-To Geek AI",
+      "rss": "https://www.howtogeek.com/feed/",
+      "niche": "ai_tools",
+      "authority": "medium"
+    }
+  ]
+}
