@@ -20,7 +20,7 @@ import requests
 
 from config.settings import (
     BLOG_NAME, GEMINI_API_KEY, GEMINI_FALLBACK, GEMINI_MODEL,
-    GEMINI_TEMPERATURE, MAX_WORD_COUNT, MIN_WORD_COUNT,
+    GEMINI_TEMPERATURE, MAX_WORD_COUNT, MIN_WORD_COUNT, SLOT_CONFIGS,
 )
 
 logger = logging.getLogger(__name__)
@@ -28,74 +28,102 @@ logger = logging.getLogger(__name__)
 GEMINI_REST_BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 
 
-def _build_prompt(topic: dict, competitor_analysis: dict) -> str:
+def _build_prompt(topic: dict, competitor_analysis: dict, slot: str = "morning", recent_titles: list[str] = None) -> str:
     """
-    Build a detailed Gemini prompt that incorporates:
-    - The target topic and keywords
-    - Competitor format/style patterns learned today
-    - SEO article structure
-    - Blog voice guidelines
+    Build a rich Gemini prompt incorporating:
+    - Target topic and SEO keywords
+    - Slot-based editorial archetype (Morning / Noon / Evening)
+    - Strict anti-AI cliché rules for 100% human-grade uniqueness
+    - Recent article memory to prevent repetitive angles
     """
     topic_text  = topic["topic"]
     keywords    = topic.get("keywords", [])
     niche       = topic.get("niche", "ai_finance_overlap")
-    fmt         = topic.get("format", "listicle")
+    fmt         = topic.get("format", "how_to")
     patterns    = competitor_analysis.get("patterns", {})
     hot_kws     = patterns.get("hot_keywords", [])[:8]
     avg_words   = patterns.get("avg_title_words", 8)
+    slot_cfg    = SLOT_CONFIGS.get(slot, SLOT_CONFIGS.get("morning", {}))
 
-    # Format instruction
+    # Format instructions with distinct structures
     format_instructions = {
-        "listicle":    "Write a numbered list article (e.g., '7 Best...' or '5 Ways to...'). Each item should have a bold H3 heading, 2-3 sentences of explanation, and a practical tip.",
-        "how_to":      "Write a step-by-step how-to guide. Use numbered steps with H3 headings. Include a 'Before You Start' section and a 'Common Mistakes' section.",
-        "educational": "Write an educational explainer article. Start with a simple definition, then go deeper. Use real-world examples and comparisons.",
-        "review":      "Write a balanced review/comparison article. Include pros, cons, pricing, and a final verdict section.",
-        "roundup":     "Write a roundup article covering the latest developments. Include context, key players, and practical implications for readers.",
-        "general":     "Write an informative article with clear H2 sections. Balance education with actionable advice.",
+        "market_breakdown": (
+            "Write a sharp, high-signal market & technology analysis.\n"
+            "Structure:\n"
+            "1. <h2>The Core Signal: What Just Happened</h2> (Direct, factual hook)\n"
+            "2. <h2>Why This Shift Matters for Income & Business</h2> (Economic & productivity impact)\n"
+            "3. <h2>Winners vs. Losers Comparison Table</h2> (Use a clean HTML <table> with <th> and <td> tags)\n"
+            "4. <h2>3 Strategic Moves to Capitalize on This Now</h2> (Actionable, no-fluff steps)\n"
+            "5. <h2>Frequently Asked Questions</h2> (4 concise FAQ answers)"
+        ),
+        "how_to": (
+            "Write a practical, hands-on masterclass / tutorial.\n"
+            "Structure:\n"
+            "1. <h2>Quick Overview & Prerequisites Checklist</h2> (What you need before starting)\n"
+            "2. <h2>Step-by-Step Implementation Blueprint</h2> (Numbered steps with <h3> headings and real tool settings)\n"
+            "3. <h2>Cost vs. Expected Return Breakdown</h2> (Realistic numbers and time investment)\n"
+            "4. <h2>Common Pitfalls & How to Avoid Them</h2>\n"
+            "5. <h2>Frequently Asked Questions</h2> (4 concise FAQ answers)"
+        ),
+        "case_study": (
+            "Write an engaging, narrative case study & playbook.\n"
+            "Structure:\n"
+            "1. <h2>The Story & Setup: Breaking Down the Scenario</h2> (Human narrative, real stakes)\n"
+            "2. <h2>The Strategy & Unit Economics</h2> (Transparent breakdown of tools and math)\n"
+            "3. <h2>The Replicable Framework for Beginners</h2> (3-step actionable process)\n"
+            "4. <h2>Key Lessons Learned & Hard Truths</h2>\n"
+            "5. <h2>Discussion & Frequently Asked Questions</h2> (4 questions with answers)"
+        ),
+        "listicle": (
+            "Write a curated, high-value roundup listicle (e.g. 5 Best... or 7 Ways...).\n"
+            "Each item MUST have a bold <h3> heading, 2-3 sentences of evaluation, an 'Ideal For' line, and a 'Practical Caveat'."
+        ),
+        "review": (
+            "Write a balanced, critical review and comparison.\n"
+            "Include features, real pricing tiers, pros & cons lists (<ul>), and a definitive verdict."
+        ),
     }
-    fmt_instruction = format_instructions.get(fmt, format_instructions["general"])
+    fmt_instruction = format_instructions.get(fmt, format_instructions["how_to"])
 
-    # Niche voice
-    niche_voices = {
-        "ai_tools":          "You write for people who want to use AI tools practically — busy professionals and side hustlers who need clear, no-fluff guidance.",
-        "personal_finance":  "You write for people building financial freedom — practical advice, real numbers, no jargon.",
-        "ai_finance_overlap": "You write for people who want to use AI to improve their finances and build income — the intersection of technology and money.",
-    }
-    voice = niche_voices.get(niche, niche_voices["ai_finance_overlap"])
+    # Recent titles memory
+    recent_memory_block = ""
+    if recent_titles:
+        titles_preview = "\n".join(f"- {t}" for t in recent_titles[:6])
+        recent_memory_block = f"""
+RECENT ARTICLES ALREADY PUBLISHED ON THIS BLOG (DO NOT REPEAT THEIR ANGLES OR PHRASINGS):
+{titles_preview}
+"""
 
-    # Related keywords from competitor trends to weave in naturally
     related_kw_str = ", ".join(hot_kws[:6]) if hot_kws else "AI, income, tools, productivity"
 
-    return f"""You are a professional blogger writing for "{BLOG_NAME}" — a blog with the tagline "Real ways to earn with AI. No hype."
+    return f"""You are a professional digital journalist and entrepreneur writing for "{BLOG_NAME}" ({BLOG_TAGLINE}).
+EDITION: {slot_cfg.get("name", "Daily Feature")}
 
-BLOG VOICE: {voice}
+TODAY'S TOPIC: {topic_text}
+PRIMARY SEO KEYWORDS (incorporate naturally): {", ".join(keywords)}
+RELATED KEYWORDS: {related_kw_str}
 
-TODAY'S ARTICLE TOPIC: {topic_text}
-
-PRIMARY SEO KEYWORDS (use naturally throughout): {", ".join(keywords)}
-RELATED KEYWORDS (weave in where natural): {related_kw_str}
-
-FORMAT REQUIREMENT:
+ARTICLE FORMAT:
 {fmt_instruction}
 
-ARTICLE REQUIREMENTS:
-1. Word count: {MIN_WORD_COUNT}–{MAX_WORD_COUNT} words
-2. Title: {int(avg_words)+2}–{int(avg_words)+5} words, include primary keyword, no clickbait
-3. Structure: Introduction → Main content (H2/H3 sections) → FAQ (5 questions) → Conclusion with CTA
-4. Writing style: Conversational, direct, factual. NO fluff. Every sentence must add value.
-5. Include at least ONE specific example or real tool/number to make it concrete
-6. End each major section with one actionable takeaway
-7. FAQ section: 5 real questions people ask, with concise answers (40-60 words each)
-8. CTA in conclusion: Invite readers to comment, share, or subscribe to newsletter
-9. DO NOT use fake statistics. If citing data, say "according to [general knowledge]"
-10. DO NOT include affiliate links (leave placeholder: [AFFILIATE_PLACEHOLDER])
-
-RETURN FORMAT — Respond with valid JSON only (no markdown wrapper):
+STRICT ANTI-AI & HUMAN WRITING RULES:
+1. FORBIDDEN PHRASES (NEVER use any of these):
+   "In this comprehensive guide", "In today's fast-paced digital world", "delve into", "tapestry",
+   "game changer", "revolutionary", "look no further", "navigating the complex world of",
+   "at the end of the day", "it's crucial to remember", "a testament to".
+2. NO GENERIC OPENING QUESTIONS: Do NOT start with "Have you ever wondered...?" or "Are you looking for...?".
+   Open immediately with a striking fact, a concrete figure, or a direct observation.
+3. CONCRETE DETAILS: Name specific tools, realistic prices (e.g., "$20/mo", "free tier with 50 credits"),
+   and real benchmarks. Avoid vague advice like "utilize smart software".
+4. WORD COUNT: {MIN_WORD_COUNT}–{MAX_WORD_COUNT} words. Every paragraph must provide clear value.
+5. NO FAKE DATA: State "based on industry testing" or "according to standard benchmarks".
+{recent_memory_block}
+RETURN FORMAT — Valid JSON only (no markdown code fences):
 {{
-  "title": "exact article title (55-60 chars ideal)",
-  "meta_description": "compelling 150-160 char description for Google search results",
+  "title": "high-CTR, compelling article title (50-65 chars, primary keyword included)",
+  "meta_description": "engaging meta description for Google search (150-160 chars)",
   "labels": ["tag1", "tag2", "tag3", "tag4"],
-  "html_content": "FULL article HTML starting with <h2> (NOT <h1>, title is separate). Include proper HTML: <h2>, <h3>, <strong>, <ul>, <ol>, <li>, <p> tags. Do NOT include <html>, <head>, or <body> tags."
+  "html_content": "Full article HTML starting directly with <h2>. Use clean HTML: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <table>, <tr>, <th>, <td>. Do NOT include <html>, <head>, or <body> tags."
 }}"""
 
 
@@ -189,45 +217,64 @@ def _call_gemini(prompt: str, api_key: str) -> dict | None:
     return None
 
 
-def _build_full_html(article_data: dict, topic: dict) -> str:
+def _build_full_html(article_data: dict, topic: dict, slot: str = "morning") -> str:
     """
     Wrap the Gemini-generated HTML content in a clean blog post structure.
-    Adds a publication date, niche tag, and subtle branding.
+    Adds a publication date, niche tag, and subtle branding styled specifically
+    for this edition (Morning / Noon / Evening).
     """
     title       = article_data.get("title", topic["topic"])
     html_body   = article_data.get("html_content", "<p>Article content unavailable.</p>")
     niche_label = topic.get("niche", "").replace("_", " ").title()
     pub_date    = datetime.now().strftime("%B %d, %Y")
 
-    # Add responsive image placeholder (first paragraph area)
-    # In Phase 3 we can add real images via Unsplash API
+    slot_cfg    = SLOT_CONFIGS.get(slot, SLOT_CONFIGS.get("morning", {}))
+    bg_gradient = slot_cfg.get("bg_gradient", "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1e3a8a 100%)")
+    badge_bg    = slot_cfg.get("badge_bg", "#2563eb")
+    primary_col = slot_cfg.get("primary_color", "#2563eb")
+    slot_name   = slot_cfg.get("name", "Daily Intelligence")
+
     header_block = f"""
-<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            padding: 2rem; border-radius: 12px; margin-bottom: 2rem; color: white;">
-  <span style="background: #e94560; padding: 4px 12px; border-radius: 20px;
-               font-size: 0.8rem; font-weight: bold; text-transform: uppercase;
-               letter-spacing: 1px;">{niche_label}</span>
-  <p style="margin: 0.8rem 0 0; opacity: 0.75; font-size: 0.9rem;">
+<div style="background: {bg_gradient};
+            padding: 2.2rem; border-radius: 14px; margin-bottom: 2rem; color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.12);">
+  <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap;">
+    <span style="background: {badge_bg}; padding: 4px 12px; border-radius: 20px;
+                 font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+                 letter-spacing: 1px; color: #ffffff;">{niche_label}</span>
+    <span style="opacity: 0.85; font-size: 0.82rem; letter-spacing: 0.5px; font-weight: 500;">&bull; {slot_name}</span>
+  </div>
+  <p style="margin: 0; opacity: 0.8; font-size: 0.9rem;">
     Published {pub_date} &middot; {BLOG_NAME}
   </p>
 </div>
 """
 
-    footer_block = """
-<hr style="margin: 2rem 0; border-color: #eee;">
-<div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;
-            border-left: 4px solid #e94560;">
-  <strong>&#128161; Found this useful?</strong>
-  Share it with someone building their side income. And
-  <a href="#" style="color: #e94560;">subscribe to our newsletter</a>
-  for weekly AI &amp; finance tips — straight to your inbox.
+    footer_block = f"""
+<hr style="margin: 2.5rem 0; border: none; border-top: 1px solid #e2e8f0;">
+<div style="background: #f8fafc; padding: 1.8rem; border-radius: 10px;
+            border-left: 5px solid {primary_col}; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+  <strong style="font-size: 1.05rem; color: #0f172a;">💡 Actionable Next Step</strong>
+  <p style="margin: 0.5rem 0 1.2rem; color: #475569; font-size: 0.95rem; line-height: 1.6;">
+    Real income comes from implementation, not just reading. Test one concept or tool from this guide today.
+  </p>
+  <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+    <a href="#" style="background: {primary_col}; color: #ffffff; padding: 9px 18px; border-radius: 6px; text-decoration: none; font-size: 0.88rem; font-weight: 600; display: inline-block;">
+      Subscribe to Free Weekly Newsletter
+    </a>
+    <span style="color: #64748b; font-size: 0.85rem;">&bull; Free tools &amp; tactical income frameworks</span>
+  </div>
 </div>
 """
 
     return header_block + html_body + footer_block
 
 
-def generate_article(topic: dict, competitor_analysis: dict) -> dict | None:
+def generate_article(
+    topic: dict,
+    competitor_analysis: dict,
+    slot: str = "morning",
+    recent_titles: list[str] = None,
+) -> dict | None:
     """
     Main entry point: generate a complete, publish-ready article.
 
@@ -239,6 +286,7 @@ def generate_article(topic: dict, competitor_analysis: dict) -> dict | None:
         "html_content":     str,   # full HTML ready for Blogger
         "keywords":         [str],
         "niche":            str,
+        "slot":             str,
     }
     Or None on failure.
     """
@@ -247,9 +295,9 @@ def generate_article(topic: dict, competitor_analysis: dict) -> dict | None:
         logger.error("GEMINI_API_KEY not set")
         return None
 
-    logger.info("Generating article: %s", topic["topic"][:70])
+    logger.info("Generating article for slot [%s]: %s", slot, topic["topic"][:70])
 
-    prompt = _build_prompt(topic, competitor_analysis)
+    prompt = _build_prompt(topic, competitor_analysis, slot=slot, recent_titles=recent_titles)
     article_data = _call_gemini(prompt, api_key)
 
     if not article_data:
@@ -264,10 +312,11 @@ def generate_article(topic: dict, competitor_analysis: dict) -> dict | None:
         return None
 
     # Build full HTML with header/footer
-    full_html = _build_full_html(article_data, topic)
+    full_html = _build_full_html(article_data, topic, slot=slot)
     article_data["html_content"] = full_html
     article_data["keywords"] = topic.get("keywords", [])
     article_data["niche"] = topic.get("niche", "")
+    article_data["slot"] = slot
 
     logger.info(
         "Article generated: '%s' | ~%d words | labels: %s",

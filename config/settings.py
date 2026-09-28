@@ -24,11 +24,44 @@ BLOG_NAME        = "AI Income Lab"
 BLOG_TAGLINE     = "Real ways to earn with AI. No hype."
 BLOG_AUTHOR      = "AI Income Lab"
 
-# ── Article generation ─────────────────────────────────────────────────────────
-ARTICLES_PER_DAY = 3
+# ── Article generation & Staggered Schedule ──────────────────────────────────
+# In automated mode, we run 3 times a day (Morning, Noon, Evening) with 1 article
+# per run so publishing is spaced out naturally and never flagged as automated spam.
+ARTICLES_PER_RUN = int(os.getenv("ARTICLES_COUNT", "1"))
 MIN_WORD_COUNT   = 1200
 MAX_WORD_COUNT   = 2000
 GEMINI_TEMPERATURE = 0.75          # slightly creative but factual
+
+# Slot Archetypes based on UTC time (IST = UTC + 5:30)
+# Morning (03:30 UTC / 9:00 AM IST)  -> Market & Trend Breakdown
+# Noon    (08:30 UTC / 2:00 PM IST)  -> Practical Masterclass & Tool Teardown
+# Evening (14:30 UTC / 8:00 PM IST)  -> Case Study & Income Blueprint
+SLOT_CONFIGS = {
+    "morning": {
+        "name": "Morning Signal & Market Analysis",
+        "format": "market_breakdown",
+        "niche_preference": "ai_finance_overlap",
+        "primary_color": "#2563eb",   # Electric Cobalt Blue
+        "bg_gradient": "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1e3a8a 100%)",
+        "badge_bg": "#2563eb",
+    },
+    "noon": {
+        "name": "Midday Practical Masterclass",
+        "format": "how_to",
+        "niche_preference": "ai_tools",
+        "primary_color": "#059669",   # Mint Emerald
+        "bg_gradient": "linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%)",
+        "badge_bg": "#059669",
+    },
+    "evening": {
+        "name": "Evening Playbook & Case Study",
+        "format": "case_study",
+        "niche_preference": "personal_finance",
+        "primary_color": "#d97706",   # Sunset Amber
+        "bg_gradient": "linear-gradient(135deg, #451a03 0%, #78350f 50%, #b45309 100%)",
+        "badge_bg": "#d97706",
+    },
+}
 
 # ── Database ───────────────────────────────────────────────────────────────────
 DB_FILE          = "database/published_topics.json"

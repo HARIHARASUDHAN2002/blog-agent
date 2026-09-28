@@ -82,10 +82,14 @@ def _niche_relevance(title: str, niche_seeds: list[str]) -> float:
     return min(matches / 3, 1.0)
 
 
+from config.settings import SLOT_CONFIGS
+
+
 def select_topics(
     trends: list[dict],
     competitor_analysis: dict,
-    n: int = 3,
+    n: int = 1,
+    slot: str = "morning",
 ) -> list[dict]:
     """
     Select the best N topics to write about today.
@@ -95,7 +99,7 @@ def select_topics(
         "topic":   str,       # clean blog topic
         "keywords": [str],    # target SEO keywords
         "niche":   str,       # niche id
-        "format":  str,       # suggested format (listicle / how_to / educational)
+        "format":  str,       # suggested format (how_to / market_breakdown / case_study)
         "score":   float,
     }
     """
@@ -104,14 +108,20 @@ def select_topics(
     recent_titles = get_recent_titles(40)
     recent_keywords = set(get_recent_keywords(60))
 
+    # Slot configuration
+    slot_cfg = SLOT_CONFIGS.get(slot, SLOT_CONFIGS.get("morning", {}))
+    preferred_format = slot_cfg.get("format", "how_to")
+    preferred_niche  = slot_cfg.get("niche_preference", "ai_finance_overlap")
+
     # Build competitor word sets for gap analysis
     comp_titles = competitor_analysis.get("recent_titles", [])
     comp_word_sets = [set(t.lower().split()) for t in comp_titles if t]
     hot_keywords = set(competitor_analysis.get("patterns", {}).get("hot_keywords", []))
-    top_formats = competitor_analysis.get("patterns", {}).get("top_formats", ["listicle", "how_to"])
 
-    # Choose the dominant format for today (rotate)
-    today_format = top_formats[0] if top_formats else "listicle"
+    # Rotate formats across articles so no two articles ever use the same format
+    format_rotation = [preferred_format, "how_to", "market_breakdown", "case_study", "listicle", "review"]
+    # Remove duplicates preserving order
+    format_rotation = list(dict.fromkeys(format_rotation))
 
     candidates = []
 
@@ -167,24 +177,29 @@ def select_topics(
             "topic": topic,
             "keywords": keywords,
             "niche": best_niche,
-            "format": today_format,
+            "format": preferred_format,
             "score": round(total_score, 4),
             "source": trend.get("source", "unknown"),
         })
 
+    # Boost candidates matching the slot's preferred niche
+    for c in candidates:
+        if c["niche"] == preferred_niche:
+            c["score"] = round(c["score"] * 1.25, 4)
+
     # Sort by score, take top N (ensuring niche variety)
     candidates.sort(key=lambda x: x["score"], reverse=True)
 
-    # Pick top candidates ensuring at least some niche variety
+    # Pick top candidates and assign distinct formats
     selected = []
     used_niches: set = set()
     for c in candidates:
         if len(selected) >= n:
             break
         # Allow max 2 from same niche
-        if used_niches.count(c["niche"]) if hasattr(used_niches, "count") else \
-                sum(1 for s in selected if s["niche"] == c["niche"]) >= 2:
+        if sum(1 for s in selected if s["niche"] == c["niche"]) >= 2:
             continue
+        c["format"] = format_rotation[len(selected) % len(format_rotation)]
         selected.append(c)
         used_niches.add(c["niche"])
 

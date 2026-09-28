@@ -1,17 +1,32 @@
-name: 🤖 AI Income Lab — Daily Blog Agent
+name: 🤖 AI Income Lab — Staggered Blog Agent
 
 on:
-  # Runs every day at 9:00 AM IST (3:30 UTC)
+  # 3 Staggered runs per day (Natural Human Schedule):
+  # 1. Morning Edition: 09:00 AM IST (03:30 UTC) — Market & Trend Breakdown
+  # 2. Noon Edition:    02:00 PM IST (08:30 UTC) — Practical Masterclass & How-To
+  # 3. Evening Edition: 08:00 PM IST (14:30 UTC) — Case Study & Income Playbook
   schedule:
     - cron: '30 3 * * *'
+    - cron: '30 8 * * *'
+    - cron: '30 14 * * *'
 
-  # Allow manual trigger from GitHub UI (useful for testing)
+  # Allow manual trigger from GitHub UI
   workflow_dispatch:
     inputs:
-      dry_run:
-        description: 'Dry run (skip publishing)'
+      slot:
+        description: 'Edition slot (auto / morning / noon / evening)'
         required: false
-        default: 'false'
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - morning
+          - noon
+          - evening
+      articles_count:
+        description: 'Number of articles to generate in this run'
+        required: false
+        default: '1'
 
 jobs:
   run-blog-agent:
@@ -45,13 +60,16 @@ jobs:
         env:
           GEMINI_API_KEY:    ${{ secrets.GEMINI_API_KEY }}
           BLOGGER_BLOG_ID:   ${{ secrets.BLOGGER_BLOG_ID }}
+          BLOG_SLOT:         ${{ github.event.inputs.slot != 'auto' && github.event.inputs.slot || '' }}
+          ARTICLES_COUNT:    ${{ github.event.inputs.articles_count || '1' }}
         run: python scheduler.py
 
-      - name: 💾 Commit updated article database
-        if: always()   # run even if scheduler exits with error (partial success)
+      - name: 💾 Commit updated article database & social promotions
+        if: always()
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name  "github-actions[bot]"
-          git add database/published_topics.json
-          git diff --staged --quiet || git commit -m "🤖 Auto: update published_topics.json [skip ci]"
+          git add database/published_topics.json database/social_promotions.json 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "🤖 Auto: update published_topics.json & social promos [skip ci]"
+          git pull --rebase origin main || true
           git push
