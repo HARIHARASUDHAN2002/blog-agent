@@ -2,13 +2,14 @@ name: 🌐 TrendPulse Daily — Multi-Horizon Blog Agent
 
 on:
   # 3 Staggered runs per day (Multi-Horizon Schedule):
-  # 1. Morning Edition: 09:00 AM IST (03:30 UTC) — 24-Hour Trend Pulse (Breaking)
-  # 2. Noon Edition:    02:00 PM IST (08:30 UTC) — Weekly Deep Dive & Teardown
-  # 3. Evening Edition: 08:00 PM IST (14:30 UTC) — Monthly Big Picture & Future
+  # 1. Morning Edition: ~08:47 AM IST (03:17 UTC) — 24-Hour Trend Pulse (Breaking)
+  # 2. Noon Edition:    ~01:47 PM IST (08:17 UTC) — Weekly Deep Dive & Teardown
+  # 3. Evening Edition: ~07:47 PM IST (14:17 UTC) — Monthly Big Picture & Future
   schedule:
-    - cron: '30 3 * * *'
-    - cron: '30 8 * * *'
-    - cron: '30 14 * * *'
+    - cron: '17 3 * * *'
+    - cron: '17 8 * * *'
+    - cron: '17 14 * * *'
+
 
   # Allow manual trigger from GitHub UI
   workflow_dispatch:
