@@ -64,6 +64,8 @@ jobs:
           ARTICLES_COUNT:    ${{ github.event.inputs.articles_count || '1' }}
           WHATSAPP_PHONE:    ${{ secrets.WHATSAPP_PHONE }}
           WHATSAPP_APIKEY:   ${{ secrets.WHATSAPP_APIKEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python scheduler.py
 
       - name: 💾 Commit updated article database & social promotions
