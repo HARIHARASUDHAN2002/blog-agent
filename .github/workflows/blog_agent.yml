@@ -1,10 +1,10 @@
-name: 🤖 AI Income Lab — Staggered Blog Agent
+name: 🌐 TrendPulse Daily — Multi-Horizon Blog Agent
 
 on:
-  # 3 Staggered runs per day (Natural Human Schedule):
-  # 1. Morning Edition: 09:00 AM IST (03:30 UTC) — Market & Trend Breakdown
-  # 2. Noon Edition:    02:00 PM IST (08:30 UTC) — Practical Masterclass & How-To
-  # 3. Evening Edition: 08:00 PM IST (14:30 UTC) — Case Study & Income Playbook
+  # 3 Staggered runs per day (Multi-Horizon Schedule):
+  # 1. Morning Edition: 09:00 AM IST (03:30 UTC) — 24-Hour Trend Pulse (Breaking)
+  # 2. Noon Edition:    02:00 PM IST (08:30 UTC) — Weekly Deep Dive & Teardown
+  # 3. Evening Edition: 08:00 PM IST (14:30 UTC) — Monthly Big Picture & Future
   schedule:
     - cron: '30 3 * * *'
     - cron: '30 8 * * *'

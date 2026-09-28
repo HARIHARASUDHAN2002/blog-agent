@@ -78,7 +78,7 @@ def run() -> int:
     slot_info = SLOT_CONFIGS.get(slot, {})
 
     logger.info("=" * 60)
-    logger.info("🚀 AI Income Lab Blog Agent — Staggered Edition Run")
+    logger.info("🚀 TrendPulse Daily Blog Agent — Multi-Horizon Edition Run")
     logger.info("   Time: %s UTC", start_time.strftime("%Y-%m-%d %H:%M"))
     logger.info("   Slot: [%s] -> %s", slot.upper(), slot_info.get("name", "Daily Post"))
     logger.info("=" * 60)
