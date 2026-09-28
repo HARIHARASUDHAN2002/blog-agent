@@ -93,6 +93,12 @@ def send_telegram_notification(title: str, url: str, slot: str, total_posts: int
 
 
 def notify_all(title: str, url: str, slot: str, total_posts: int, traffic_stats: dict = None):
-    """Attempt WhatsApp first, then Telegram if configured."""
-    send_whatsapp_notification(title, url, slot, total_posts, traffic_stats=traffic_stats)
-    send_telegram_notification(title, url, slot, total_posts, traffic_stats=traffic_stats)
+    """Send via Telegram if configured, else WhatsApp."""
+    if os.getenv("TELEGRAM_BOT_TOKEN") and os.getenv("TELEGRAM_CHAT_ID"):
+        logger.info("📱 Sending instant notification to Telegram bot...")
+        send_telegram_notification(title, url, slot, total_posts, traffic_stats=traffic_stats)
+    elif os.getenv("WHATSAPP_PHONE") and os.getenv("WHATSAPP_APIKEY"):
+        logger.info("📱 Sending instant notification to WhatsApp...")
+        send_whatsapp_notification(title, url, slot, total_posts, traffic_stats=traffic_stats)
+    else:
+        logger.info("No notification service configured (TELEGRAM_BOT_TOKEN or WHATSAPP_APIKEY not set).")
