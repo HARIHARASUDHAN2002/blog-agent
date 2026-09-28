@@ -151,14 +151,22 @@ def _get_available_models(api_key: str) -> list[str]:
         logger.warning("Could not dynamically query Gemini models: %s", e)
 
     if discovered:
-        # Prioritize flash models, sorted descending (e.g. 2.5 before 2.0 before 1.5)
-        flash = sorted([m for m in discovered if "flash" in m], reverse=True)
-        others = sorted([m for m in discovered if "flash" not in m], reverse=True)
-        _cached_models = flash + others
+        # Exclude audio, tts, realtime, and omni preview models that have restrictive rate limits
+        filtered = [
+            m for m in discovered
+            if not any(x in m for x in ("tts", "embedding", "omni", "audio", "realtime", "live"))
+        ]
+        # Prioritize standard text flash models (e.g. gemini-flash-latest, gemini-2.5-flash), then lite, then others
+        flash = sorted([m for m in filtered if "flash" in m and "lite" not in m], reverse=True)
+        lite = sorted([m for m in filtered if "lite" in m], reverse=True)
+        others = sorted([m for m in filtered if "flash" not in m], reverse=True)
+        _cached_models = flash + lite + others
         logger.info("Discovered available Gemini models: %s", _cached_models[:5])
         return _cached_models
 
     _cached_models = [
+        "gemini-flash-latest",
+        "gemini-flash-lite-latest",
         GEMINI_MODEL,
         GEMINI_FALLBACK,
         "gemini-2.5-flash",
