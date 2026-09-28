@@ -1,63 +1,63 @@
 {
-  "_comment": "Niche definitions for AI Income Lab. Each niche has topic seeds and target keywords.",
-  "primary_niche": "AI Tools & Personal Finance",
+  "_comment": "Universal editorial pillars for TrendPulse Daily.",
+  "primary_niche": "Technology, Money, Science & Global Trends",
   "niches": [
     {
-      "id": "ai_tools",
-      "name": "AI Tools & Productivity",
-      "weight": 0.35,
-      "topic_seeds": [
-        "best free AI tools",
-        "AI productivity tools",
-        "ChatGPT alternatives",
-        "AI writing tools",
-        "AI for beginners",
-        "free AI image generators",
-        "AI automation tools",
-        "AI tools for students",
-        "AI tools for freelancers",
-        "AI coding assistants"
-      ],
-      "target_keywords": ["AI tools", "free AI", "artificial intelligence", "ChatGPT", "Gemini AI"],
-      "affiliate_categories": ["software", "saas", "tools"]
-    },
-    {
-      "id": "personal_finance",
-      "name": "Personal Finance & Side Income",
-      "weight": 0.35,
-      "topic_seeds": [
-        "side income ideas",
-        "passive income with AI",
-        "how to make money online",
-        "personal finance tips",
-        "investing for beginners",
-        "budgeting with AI",
-        "freelancing tips",
-        "remote work income",
-        "digital products to sell",
-        "stock market basics"
-      ],
-      "target_keywords": ["side income", "passive income", "make money online", "personal finance", "investing"],
-      "affiliate_categories": ["finance", "investment", "courses"]
-    },
-    {
-      "id": "ai_finance_overlap",
-      "name": "AI for Money & Business",
+      "id": "tech_innovation",
+      "name": "Technology & Innovation",
       "weight": 0.30,
       "topic_seeds": [
-        "AI for personal finance",
-        "automate income with AI",
-        "AI stock analysis tools",
-        "AI business ideas",
-        "AI side hustle ideas",
-        "AI for budgeting",
-        "AI tools to save money",
-        "AI marketing tools free",
-        "AI content creation for income",
-        "AI automation side income"
+        "breakthrough tech trends",
+        "new smartphone features explained",
+        "best software tools this year",
+        "cybersecurity tips everyone should know",
+        "how modern chips and processors work",
+        "privacy tools you should use",
+        "future of computing and gadgets"
       ],
-      "target_keywords": ["AI income", "AI money", "AI business", "automate income", "AI side hustle"],
-      "affiliate_categories": ["finance", "software", "courses"]
+      "target_keywords": ["technology", "tech trends", "gadgets", "software", "innovation"]
+    },
+    {
+      "id": "business_money",
+      "name": "Business, Money & Economy",
+      "weight": 0.30,
+      "topic_seeds": [
+        "smart personal finance habits",
+        "stock market shifts explained",
+        "how top startups build revenue",
+        "side income and freelancing strategies",
+        "index funds and beginner investing",
+        "inflation and interest rates simplified",
+        "digital business ideas worth exploring"
+      ],
+      "target_keywords": ["business", "money", "investing", "economy", "personal finance"]
+    },
+    {
+      "id": "science_future",
+      "name": "Science & Future Discoveries",
+      "weight": 0.20,
+      "topic_seeds": [
+        "space exploration milestones",
+        "clean energy breakthroughs",
+        "how modern medicine is evolving",
+        "climate tech innovations",
+        "fascinating physics and astronomy discoveries",
+        "scientific discoveries of the decade"
+      ],
+      "target_keywords": ["science", "space", "health", "discoveries", "future"]
+    },
+    {
+      "id": "culture_explainers",
+      "name": "Global Trends & Explainers",
+      "weight": 0.20,
+      "topic_seeds": [
+        "what everyone is talking about this week",
+        "viral internet phenomenon explained",
+        "productivity systems that actually work",
+        "fascinating history facts that explain modern life",
+        "the psychology behind everyday decisions"
+      ],
+      "target_keywords": ["trends", "explainer", "culture", "productivity", "lifestyle"]
     }
   ]
 }

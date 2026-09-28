@@ -146,7 +146,7 @@ def select_topics(
         trend_score = min(trend.get("score", 1) / 500, 1.0)
 
         # Niche relevance
-        best_niche = "ai_finance_overlap"
+        best_niche = "tech_innovation"
         best_niche_score = 0.0
         for niche in niches:
             rel = _niche_relevance(topic, niche.get("topic_seeds", []))
@@ -165,6 +165,12 @@ def select_topics(
             freshness     * 0.15
         )
 
+        # Horizon match bonus (Morning -> 24h, Noon -> Week, Evening -> Month)
+        horizon = trend.get("horizon", "24h")
+        target_horizon = slot_cfg.get("horizon", "24h")
+        if horizon == target_horizon:
+            total_score *= 1.25
+
         # Extract target SEO keywords
         niche_data = next((n for n in niches if n["id"] == best_niche), {})
         niche_keywords = niche_data.get("target_keywords", [])
@@ -178,6 +184,7 @@ def select_topics(
             "keywords": keywords,
             "niche": best_niche,
             "format": preferred_format,
+            "horizon": horizon,
             "score": round(total_score, 4),
             "source": trend.get("source", "unknown"),
         })

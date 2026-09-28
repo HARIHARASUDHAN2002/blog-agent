@@ -94,9 +94,9 @@ RECENT ARTICLES ALREADY PUBLISHED ON THIS BLOG (DO NOT REPEAT THEIR ANGLES OR PH
 {titles_preview}
 """
 
-    related_kw_str = ", ".join(hot_kws[:6]) if hot_kws else "AI, income, tools, productivity"
+    related_kw_str = ", ".join(hot_kws[:6]) if hot_kws else "technology, business, innovation, trends"
 
-    return f"""You are a professional digital journalist and entrepreneur writing for "{BLOG_NAME}" ({BLOG_TAGLINE}).
+    return f"""You are an insightful journalist and analyst writing for "{BLOG_NAME}" ({BLOG_TAGLINE}).
 EDITION: {slot_cfg.get("name", "Daily Feature")}
 
 TODAY'S TOPIC: {topic_text}
@@ -106,17 +106,17 @@ RELATED KEYWORDS: {related_kw_str}
 ARTICLE FORMAT:
 {fmt_instruction}
 
-STRICT ANTI-AI & HUMAN WRITING RULES:
-1. FORBIDDEN PHRASES (NEVER use any of these):
+STRICT EDITORIAL & ANTI-AI WRITING RULES:
+1. TOPIC INTEGRITY: Stay strictly focused on TODAY'S TOPIC. Do NOT force mentions of AI or side hustles unless the topic is directly about that. Write authentically for readers interested in technology, business, science, or general global trends.
+2. FORBIDDEN PHRASES (NEVER use any of these):
    "In this comprehensive guide", "In today's fast-paced digital world", "delve into", "tapestry",
    "game changer", "revolutionary", "look no further", "navigating the complex world of",
    "at the end of the day", "it's crucial to remember", "a testament to".
-2. NO GENERIC OPENING QUESTIONS: Do NOT start with "Have you ever wondered...?" or "Are you looking for...?".
+3. NO GENERIC OPENING QUESTIONS: Do NOT start with "Have you ever wondered...?" or "Are you looking for...?".
    Open immediately with a striking fact, a concrete figure, or a direct observation.
-3. CONCRETE DETAILS: Name specific tools, realistic prices (e.g., "$20/mo", "free tier with 50 credits"),
-   and real benchmarks. Avoid vague advice like "utilize smart software".
-4. WORD COUNT: {MIN_WORD_COUNT}–{MAX_WORD_COUNT} words. Every paragraph must provide clear value.
-5. NO FAKE DATA: State "based on industry testing" or "according to standard benchmarks".
+4. CONCRETE DETAILS: Include specific names, realistic numbers, real benchmarks, and clear context. Avoid generic vague filler.
+5. WORD COUNT: {MIN_WORD_COUNT}–{MAX_WORD_COUNT} words. Every section must deliver genuine insight.
+6. NO FAKE DATA: State "based on reported data" or "according to industry estimates".
 {recent_memory_block}
 RETURN FORMAT — Valid JSON only (no markdown code fences):
 {{

@@ -14,6 +14,8 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
+from config.settings import BLOG_NAME
+
 logger = logging.getLogger(__name__)
 
 PROMOTIONS_FILE = "database/social_promotions.json"
@@ -23,36 +25,38 @@ def _generate_social_package(article: dict) -> dict:
     """Generate X thread and LinkedIn/Reddit post for a published article."""
     title = article.get("title", "")
     url = article.get("url", "")
-    niche = article.get("niche", "ai_finance_overlap")
+    niche = article.get("niche", "tech_innovation")
     meta = article.get("meta_description", "")
     keywords = article.get("keywords", [])
 
-    hashtags = "#AI #ArtificialIntelligence #PassiveIncome #TechNews #SideHustle"
-    if "tools" in niche:
-        hashtags = "#AITools #Productivity #TechHacks #ArtificialIntelligence #Automation"
-    elif "finance" in niche:
-        hashtags = "#PersonalFinance #Investing #MoneyTips #SideIncome #WealthBuilding"
+    hashtag_map = {
+        "tech_innovation": "#Technology #TechNews #Innovation #Gadgets #Software",
+        "business_money": "#Business #Economy #PersonalFinance #Investing #Money",
+        "science_future": "#Science #Discoveries #Future #Space #Innovation",
+        "culture_explainers": "#Trends #Culture #Explained #Productivity #WorldNews",
+    }
+    hashtags = hashtag_map.get(niche, "#Trends #Tech #Business #WorldNews #Innovation")
 
     # Twitter / X Thread
-    tweet_1 = f"🚨 {title}\n\nMost people overlook this shift, but here is what it means for your income and workflow 👇\n\n[Thread 🧵]"
-    tweet_2 = f"💡 Key Takeaway:\n{meta}\n\nHere are 3 things worth noting:\n• Real tools are replacing generic advice\n• Early adopters capture the highest margins\n• Execution matters more than hype"
-    tweet_3 = f"📖 Read our complete deep dive (with step-by-step breakdowns) on AI Income Lab:\n\n🔗 {url}\n\n{hashtags}"
+    tweet_1 = f"🚨 {title}\n\nHere is what you need to know about what's happening and why it matters 👇\n\n[Thread 🧵]"
+    tweet_2 = f"💡 Key Takeaway:\n{meta}\n\n3 key takeaways:\n• The underlying context driving this\n• Who is impacted most\n• What to watch next"
+    tweet_3 = f"📖 Read our full breakdown on {BLOG_NAME}:\n\n🔗 {url}\n\n{hashtags}"
 
     # LinkedIn / Reddit Community Post
-    community_post = f"""🚀 **{title}**
+    community_post = f"""📌 **{title}**
 
 {meta}
 
-We just published a deep dive on **AI Income Lab** breaking down this exact development.
+We just published a full breakdown on **{BLOG_NAME}** diving into this development.
 
-Here are the 3 major lessons:
-1️⃣ **Practical over Theoretical**: Why real workflows beat theoretical discussions.
-2️⃣ **Actionable Steps**: What you can implement today without high upfront costs.
-3️⃣ **Future Outlook**: Where the momentum is moving over the next 6-12 months.
+Here is the quick summary:
+1️⃣ **The Context**: Why this is making headlines right now.
+2️⃣ **The Impact**: What it means for professionals, consumers, and the industry.
+3️⃣ **Looking Ahead**: Where this trend is heading next.
 
-👉 Read the full breakdown here: {url}
+👉 Read the full story here: {url}
 
-💬 **Question for the community**: What tools or strategies have worked best for you in this space so far? Let's discuss in the comments!
+💬 **Question for you**: What's your take on this? Let's discuss in the comments!
 
 {hashtags}
 """
