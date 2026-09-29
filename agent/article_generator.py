@@ -14,6 +14,7 @@ import logging
 import os
 import re
 import time
+import urllib.parse
 from datetime import datetime
 
 import requests
@@ -123,6 +124,7 @@ RETURN FORMAT — Valid JSON only (no markdown code fences):
   "title": "high-CTR, compelling article title (50-65 chars, primary keyword included)",
   "meta_description": "engaging meta description for Google search (150-160 chars)",
   "labels": ["tag1", "tag2", "tag3", "tag4"],
+  "location": "City, Country or landmark if article covers a physical location or company HQ (e.g. 'Cupertino, California', 'Geneva, Switzerland', 'Cape Canaveral, Florida'), or null if abstract/software",
   "html_content": "Full article HTML starting directly with <h2>. Use clean HTML: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <table>, <tr>, <th>, <td>. Do NOT include <html>, <head>, or <body> tags."
 }}"""
 
@@ -244,16 +246,76 @@ def _build_full_html(article_data: dict, topic: dict, slot: str = "morning") -> 
 
     header_block = f"""
 <div style="background: {bg_gradient};
-            padding: 2.2rem; border-radius: 14px; margin-bottom: 2rem; color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.12);">
+            padding: 2.2rem; border-radius: 14px; margin-bottom: 1.5rem; color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.12);">
   <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap;">
     <span style="background: {badge_bg}; padding: 4px 12px; border-radius: 20px;
                  font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
                  letter-spacing: 1px; color: #ffffff;">{niche_label}</span>
     <span style="opacity: 0.85; font-size: 0.82rem; letter-spacing: 0.5px; font-weight: 500;">&bull; {slot_name}</span>
   </div>
-  <p style="margin: 0; opacity: 0.8; font-size: 0.9rem;">
+  <p style="margin: 0; opacity: 0.85; font-size: 0.9rem;">
     Published {pub_date} &middot; {BLOG_NAME}
   </p>
+</div>
+"""
+
+    # ── 1. Google Search Explore Links (Automatic Beta Feature Equivalent) ──
+    all_kws = list(dict.fromkeys(topic.get("keywords", []) + article_data.get("labels", [])))[:5]
+    chips = []
+    for kw in all_kws:
+        enc_kw = urllib.parse.quote(kw)
+        chips.append(
+            f'<a href="https://www.google.com/search?q={enc_kw}" target="_blank" rel="noopener noreferrer" '
+            f'style="background: #ffffff; color: #1e293b; padding: 5px 12px; border-radius: 20px; font-size: 0.82rem; '
+            f'text-decoration: none; border: 1px solid #cbd5e1; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; transition: border-color 0.2s;">'
+            f'<span>{kw}</span> <span style="font-size: 0.7rem; color: #2563eb;">↗</span></a>'
+        )
+    chips_html = " ".join(chips)
+    
+    search_links_bar = f"""
+<div style="background: #f8fafc; padding: 12px 18px; border-radius: 10px; margin-bottom: 2rem; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+  <span style="font-size: 0.8rem; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 5px; text-transform: uppercase; letter-spacing: 0.5px;">
+    🔍 Google Search Explore:
+  </span>
+  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+    {chips_html}
+  </div>
+</div>
+"""
+
+    # ── 2. Google Maps Interactive Widget (Automatic Beta Feature Equivalent) ─
+    map_block = ""
+    location = article_data.get("location")
+    if location and location.lower() not in ("null", "none", ""):
+        enc_loc = urllib.parse.quote(location)
+        map_block = f"""
+<div style="margin: 2.2rem 0; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; background: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.04);">
+  <div style="background: #f8fafc; padding: 10px 16px; font-size: 0.85rem; font-weight: 600; color: #334155; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #e2e8f0;">
+    📍 <span>Location Context: <strong>{location}</strong></span>
+  </div>
+  <iframe width="100%" height="280" style="border:0; display: block;" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" src="https://maps.google.com/maps?q={enc_loc}&output=embed"></iframe>
+</div>
+"""
+
+    # ── 3. Google Search Previews / Knowledge Card (Automatic Beta Feature Equivalent)
+    topic_encoded = urllib.parse.quote(title)
+    knowledge_card = f"""
+<div style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.6rem; margin: 2.5rem 0 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.04);">
+  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.6rem;">
+    <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #4285F4;"></span>
+    <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #EA4335;"></span>
+    <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #FBBC05;"></span>
+    <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #34A853;"></span>
+    <strong style="font-size: 0.95rem; color: #0f172a; margin-left: 2px;">Google Knowledge & Real-Time Context</strong>
+  </div>
+  <p style="margin: 0 0 1rem; color: #475569; font-size: 0.88rem; line-height: 1.55;">
+    Want to explore primary source documents, check breaking community reactions, or verify live data?
+  </p>
+  <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+    <a href="https://www.google.com/search?q={topic_encoded}" target="_blank" rel="noopener noreferrer" style="background: #2563eb; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+      Explore on Google Search ↗
+    </a>
+  </div>
 </div>
 """
 
@@ -261,20 +323,21 @@ def _build_full_html(article_data: dict, topic: dict, slot: str = "morning") -> 
 <hr style="margin: 2.5rem 0; border: none; border-top: 1px solid #e2e8f0;">
 <div style="background: #f8fafc; padding: 1.8rem; border-radius: 10px;
             border-left: 5px solid {primary_col}; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
-  <strong style="font-size: 1.05rem; color: #0f172a;">💡 Actionable Next Step</strong>
+  <strong style="font-size: 1.05rem; color: #0f172a;">💡 What This Means For You</strong>
   <p style="margin: 0.5rem 0 1.2rem; color: #475569; font-size: 0.95rem; line-height: 1.6;">
-    Real income comes from implementation, not just reading. Test one concept or tool from this guide today.
+    The world is moving fast. Stay curious and track how modern technology, business shifts, and science shape everyday life.
   </p>
   <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-    <a href="#" style="background: {primary_col}; color: #ffffff; padding: 9px 18px; border-radius: 6px; text-decoration: none; font-size: 0.88rem; font-weight: 600; display: inline-block;">
-      Subscribe to Free Weekly Newsletter
+    <a href="/" style="background: {primary_col}; color: #ffffff; padding: 9px 18px; border-radius: 6px; text-decoration: none; font-size: 0.88rem; font-weight: 600; display: inline-block;">
+      Browse More Daily Trends on TrendPulse
     </a>
-    <span style="color: #64748b; font-size: 0.85rem;">&bull; Free tools &amp; tactical income frameworks</span>
+    <span style="color: #64748b; font-size: 0.85rem;">&bull; Explained simply &middot; 3 editions daily</span>
   </div>
 </div>
 """
 
-    return header_block + html_body + footer_block
+    return header_block + search_links_bar + html_body + map_block + knowledge_card + footer_block
+
 
 
 def generate_article(
