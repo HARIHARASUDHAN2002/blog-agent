@@ -61,8 +61,8 @@ jobs:
         env:
           GEMINI_API_KEY:    ${{ secrets.GEMINI_API_KEY }}
           BLOGGER_BLOG_ID:   ${{ secrets.BLOGGER_BLOG_ID }}
-          BLOG_SLOT:         ${{ github.event.inputs.slot != 'auto' && github.event.inputs.slot || '' }}
-          ARTICLES_COUNT:    ${{ github.event.inputs.articles_count || '1' }}
+          BLOG_SLOT:         ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.slot != 'auto') && github.event.inputs.slot || '' }}
+          ARTICLES_COUNT:    ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.articles_count || '1' }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python scheduler.py
