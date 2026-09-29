@@ -34,10 +34,23 @@
         "home,"
       ],
       "published_at": "2026-09-29T09:50:35.288624+00:00"
+    },
+    {
+      "title": "Tech Trends: Why You Are No Longer Invited to Dinner",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/09/tech-trends-why-you-are-no-longer.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "longer",
+        "invited",
+        "dinner"
+      ],
+      "published_at": "2026-09-29T19:27:51.602539+00:00"
     }
   ],
   "stats": {
-    "total": 3,
-    "last_run": "2026-09-29T09:50:35.288640+00:00"
+    "total": 4,
+    "last_run": "2026-09-29T19:27:51.602557+00:00"
   }
 }
