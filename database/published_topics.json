@@ -60,10 +60,21 @@
         "agents"
       ],
       "published_at": "2026-09-30T09:43:36.393602+00:00"
+    },
+    {
+      "title": "America.gov and the New Era of Digital Infrastructure",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/09/americagov-and-new-era-of-digital.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "america.gov"
+      ],
+      "published_at": "2026-09-30T14:58:08.890264+00:00"
     }
   ],
   "stats": {
-    "total": 5,
-    "last_run": "2026-09-30T09:43:36.393619+00:00"
+    "total": 6,
+    "last_run": "2026-09-30T14:58:08.890280+00:00"
   }
 }
