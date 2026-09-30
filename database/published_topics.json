@@ -47,10 +47,23 @@
         "dinner"
       ],
       "published_at": "2026-09-29T19:27:51.602539+00:00"
+    },
+    {
+      "title": "Dots: Always-On Agents and the Future of Tech Trends",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/09/dots-always-on-agents-and-future-of.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "dots:",
+        "always-on",
+        "agents"
+      ],
+      "published_at": "2026-09-30T09:43:36.393602+00:00"
     }
   ],
   "stats": {
-    "total": 4,
-    "last_run": "2026-09-29T19:27:51.602557+00:00"
+    "total": 5,
+    "last_run": "2026-09-30T09:43:36.393619+00:00"
   }
 }
