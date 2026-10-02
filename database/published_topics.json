@@ -120,10 +120,21 @@
         "public"
       ],
       "published_at": "2026-10-01T19:34:47.278843+00:00"
+    },
+    {
+      "title": "The Future of Computing: 5 Tech Trends Shaping Gadgets",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/10/the-future-of-computing-5-tech-trends.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "gadgets"
+      ],
+      "published_at": "2026-10-02T09:48:26.348999+00:00"
     }
   ],
   "stats": {
-    "total": 10,
-    "last_run": "2026-10-01T19:34:47.278862+00:00"
+    "total": 11,
+    "last_run": "2026-10-02T09:48:26.349016+00:00"
   }
 }
