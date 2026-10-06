@@ -67,6 +67,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
           DEVTO_API_KEY:      ${{ secrets.DEVTO_API_KEY }}
+          INDEXNOW_KEY:       ${{ secrets.INDEXNOW_KEY }}
         run: python scheduler.py
 
       - name: 💾 Commit updated article database & social promotions

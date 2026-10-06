@@ -191,3 +191,55 @@ def syndicate_to_devto(article: dict) -> str | None:
         logger.warning("Error syndicating to Dev.to: %s", e)
         return None
 
+
+def submit_indexnow(url: str, blog_base_url: str = "https://ai-incomelab-daily.blogspot.com") -> bool:
+    """
+    Submit a newly published article URL to IndexNow — the open protocol that
+    instantly notifies Google, Bing, Yandex, and DuckDuckGo simultaneously.
+
+    Requires INDEXNOW_KEY in GitHub Secrets AND a Blogger Page created at
+    /{key} containing just the key text (one-time setup).
+
+    Free, no rate limits, no account required beyond the key file.
+    """
+    import requests
+
+    api_key = os.getenv("INDEXNOW_KEY", "").strip()
+    if not api_key:
+        logger.info("IndexNow skipped: INDEXNOW_KEY not set in environment/secrets.")
+        return False
+
+    # IndexNow aggregator endpoint — submits to Google, Bing, Yandex in one call
+    endpoints = [
+        "https://api.indexnow.org/indexnow",
+        "https://www.bing.com/indexnow",
+        "https://yandex.com/indexnow",
+    ]
+
+    key_location = f"{blog_base_url.rstrip('/')}/{api_key}.txt"
+    success_count = 0
+
+    for endpoint in endpoints:
+        try:
+            payload = {
+                "host": "ai-incomelab-daily.blogspot.com",
+                "key": api_key,
+                "keyLocation": key_location,
+                "urlList": [url],
+            }
+            resp = requests.post(
+                endpoint,
+                json=payload,
+                headers={"Content-Type": "application/json; charset=utf-8"},
+                timeout=10,
+            )
+            if resp.status_code in (200, 202):
+                logger.info("⚡ IndexNow: '%s' instantly submitted to %s (HTTP %d)", url[:60], endpoint, resp.status_code)
+                success_count += 1
+            else:
+                logger.warning("IndexNow %s returned HTTP %d: %s", endpoint, resp.status_code, resp.text[:120])
+        except Exception as e:
+            logger.warning("IndexNow error for %s: %s", endpoint, e)
+
+    return success_count > 0
+

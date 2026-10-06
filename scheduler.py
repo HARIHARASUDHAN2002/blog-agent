@@ -34,7 +34,7 @@ from agent.topic_selector import select_topics
 from agent.article_generator import generate_article
 from agent.publisher import publish_article, get_blog_pageviews, get_live_blogger_post_titles
 from agent.database import add_article, get_recent_titles, get_all_published_titles, find_duplicate_in_published, get_stats
-from agent.social_promoter import format_github_step_summary, record_social_promotion, ping_search_aggregators, syndicate_to_devto
+from agent.social_promoter import format_github_step_summary, record_social_promotion, ping_search_aggregators, syndicate_to_devto, submit_indexnow
 from agent.notifier import notify_all
 
 
@@ -223,6 +223,9 @@ def run() -> int:
 
             # 1. Broadcast URL to open search indexers (Ping-O-Matic, Google Blog Search, Weblogs)
             ping_search_aggregators(generated_title, url)
+
+            # 1b. IndexNow — instantly notify Google, Bing, Yandex (within seconds)
+            submit_indexnow(url)
 
             # 2. Auto-syndicate to open-source platform Dev.to (if DEVTO_API_KEY is configured)
             syndicate_to_devto(article)
