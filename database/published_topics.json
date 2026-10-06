@@ -267,10 +267,22 @@
         "search"
       ],
       "published_at": "2026-10-06T10:18:53.076921+00:00"
+    },
+    {
+      "title": "Mistral Large 4: The European Tech Disruption Explained",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/10/mistral-large-4-european-tech.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "mistral",
+        "large"
+      ],
+      "published_at": "2026-10-06T15:14:55.625993+00:00"
     }
   ],
   "stats": {
-    "total": 22,
-    "last_run": "2026-10-06T10:18:53.076938+00:00"
+    "total": 23,
+    "last_run": "2026-10-06T15:14:55.626008+00:00"
   }
 }
