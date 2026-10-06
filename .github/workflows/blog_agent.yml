@@ -1,6 +1,6 @@
 name: 🌐 TrendPulse Daily — Multi-Horizon Blog Agent
 
-on:
+'on':
   # 3 Staggered runs per day (Multi-Horizon Schedule):
   # 1. Morning Edition: ~08:47 AM IST (03:17 UTC) — 24-Hour Trend Pulse (Breaking)
   # 2. Noon Edition:    ~01:47 PM IST (08:17 UTC) — Weekly Deep Dive & Teardown
@@ -9,7 +9,6 @@ on:
     - cron: '17 3 * * *'
     - cron: '17 8 * * *'
     - cron: '17 14 * * *'
-
 
   # Allow manual trigger from GitHub UI
   workflow_dispatch:
@@ -28,6 +27,8 @@ on:
         description: 'Number of articles to generate in this run'
         required: false
         default: '1'
+        type: string
+
 
 jobs:
   run-blog-agent:
@@ -65,6 +66,7 @@ jobs:
           ARTICLES_COUNT:    ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.articles_count || '1' }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+          DEVTO_API_KEY:      ${{ secrets.DEVTO_API_KEY }}
         run: python scheduler.py
 
       - name: 💾 Commit updated article database & social promotions
