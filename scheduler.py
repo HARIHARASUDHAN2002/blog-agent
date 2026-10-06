@@ -34,8 +34,9 @@ from agent.topic_selector import select_topics
 from agent.article_generator import generate_article
 from agent.publisher import publish_article, get_blog_pageviews, get_live_blogger_post_titles
 from agent.database import add_article, get_recent_titles, get_all_published_titles, find_duplicate_in_published, get_stats
-from agent.social_promoter import format_github_step_summary, record_social_promotion
+from agent.social_promoter import format_github_step_summary, record_social_promotion, ping_search_aggregators, syndicate_to_devto
 from agent.notifier import notify_all
+
 
 
 
@@ -122,6 +123,8 @@ def run() -> int:
     # ── Step 3: Evaluate all 3 horizons & pick the best unwritten topic ───────
     target_count = ARTICLES_PER_RUN
     logger.info("\n🎯 Step 3/4: Comparing 24h, Week, and Month trends to pick the best topic...")
+    traffic_stats = get_blog_pageviews()
+    logger.info("   Live Blog Traffic Stats: %d all-time views | %d views last 7 days", traffic_stats.get("all_time", 0), traffic_stats.get("last_7_days", 0))
     try:
         # Request extra ranked candidates so if one matches an existing post, backups are ready
         candidate_pool = select_topics(
@@ -130,6 +133,7 @@ def run() -> int:
             n=max(target_count * 4, 6),
             slot=slot,
             existing_titles=all_published_titles,
+            traffic_stats=traffic_stats,
         )
         logger.info("   Ranked %d candidate topics across horizons", len(candidate_pool))
     except Exception as e:
@@ -217,7 +221,13 @@ def run() -> int:
             logger.info("✅ Article %d/%d published: %s", published_count, target_count, url)
 
 
-            # Generate social media syndication kit
+            # 1. Broadcast URL to open search indexers (Ping-O-Matic, Google Blog Search, Weblogs)
+            ping_search_aggregators(generated_title, url)
+
+            # 2. Auto-syndicate to open-source platform Dev.to (if DEVTO_API_KEY is configured)
+            syndicate_to_devto(article)
+
+            # 3. Generate social media syndication kit
             try:
                 promo_pkg = record_social_promotion(article)
                 social_promotions.append(promo_pkg)
@@ -225,12 +235,11 @@ def run() -> int:
             except Exception as e:
                 logger.warning("Could not generate social promo: %s", e)
 
-            # Send instant WhatsApp notification with live overall view counts
+            # 4. Send instant Telegram notification with live overall view counts
             try:
                 current_stats = get_stats()
-                traffic_stats = get_blog_pageviews()
                 notify_all(
-                    title=article.get("title", topic["topic"]),
+                    title=generated_title,
                     url=url,
                     slot=slot,
                     total_posts=current_stats.get("total", published_count),

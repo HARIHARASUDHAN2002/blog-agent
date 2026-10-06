@@ -58,12 +58,16 @@ def send_whatsapp_notification(title: str, url: str, slot: str, total_posts: int
         return False
 
 
+import html
+
+
 def send_telegram_notification(title: str, url: str, slot: str, total_posts: int, traffic_stats: dict = None) -> bool:
-    """Optional backup: Send instant notification via Telegram Bot."""
+    """Send instant notification via Telegram Bot with live traffic stats."""
     token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
     chat_id = os.getenv("TELEGRAM_CHAT_ID", "").strip()
 
     if not token or not chat_id:
+        logger.info("Telegram notification skipped: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set.")
         return False
 
     stats = traffic_stats or {}
@@ -71,22 +75,34 @@ def send_telegram_notification(title: str, url: str, slot: str, total_posts: int
     last_7d_views  = stats.get("last_7_days", "N/A")
     posts_count    = stats.get("total_posts", total_posts)
 
+    safe_title = html.escape(title)
+
     message = (
-        f"🚀 <b>AI Income Lab — New Article Live!</b>\n\n"
-        f"📌 <b>Title:</b> {title}\n"
+        f"🌐 <b>TrendPulse Daily — New Article Live!</b>\n\n"
+        f"📌 <b>Title:</b> {safe_title}\n"
         f"🕒 <b>Edition:</b> {slot.capitalize()}\n"
-        f"🔗 <a href='{url}'>Read Article</a>\n\n"
-        f"📈 <b>Live Blog Growth:</b>\n"
-        f"• 👁️ <b>Total Views (All-Time):</b> {all_time_views}\n"
-        f"• 📊 <b>Views (Last 7 Days):</b> {last_7d_views}\n"
-        f"• 📝 <b>Total Articles:</b> {posts_count}"
+        f"🔗 <a href='{url}'>Read Article on TrendPulse</a>\n\n"
+        f"📈 <b>Live Traffic Analytics (Direct from Blogger):</b>\n"
+        f"• 👁️ <b>Total Views (All-Time):</b> {all_time_views} views\n"
+        f"• 📊 <b>Views (Last 7 Days):</b> {last_7d_views} views\n"
+        f"• 📝 <b>Live Published Posts:</b> {posts_count} posts"
     )
 
     try:
         tg_url = f"https://api.telegram.org/bot{token}/sendMessage"
-        payload = {"chat_id": chat_id, "text": message, "parse_mode": "HTML"}
+        payload = {
+            "chat_id": chat_id,
+            "text": message,
+            "parse_mode": "HTML",
+            "disable_web_page_preview": False,
+        }
         resp = requests.post(tg_url, json=payload, timeout=15)
-        return resp.status_code == 200
+        if resp.status_code == 200:
+            logger.info("✅ Telegram notification sent successfully to chat %s", chat_id)
+            return True
+        else:
+            logger.warning("❌ Telegram notification failed (HTTP %d): %s", resp.status_code, resp.text)
+            return False
     except Exception as e:
         logger.warning("Error sending Telegram notification: %s", e)
         return False

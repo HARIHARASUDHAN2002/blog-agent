@@ -83,7 +83,7 @@ def _niche_relevance(title: str, niche_seeds: list[str]) -> float:
 
 
 from config.settings import SLOT_CONFIGS
-from agent.database import find_duplicate_in_published, get_all_published_titles
+from agent.database import find_duplicate_in_published, get_all_published_titles, get_all_articles
 
 
 def select_topics(
@@ -92,20 +92,12 @@ def select_topics(
     n: int = 1,
     slot: str = "morning",
     existing_titles: list[str] | None = None,
+    traffic_stats: dict | None = None,
 ) -> list[dict]:
     """
     Evaluate trends across ALL THREE time horizons (24 Hours, Last Week, Last Month)
     in a single unified pool, strictly verify no duplicate exists, and pick the single best topic.
-
-    Returns list of dicts:
-    {
-        "topic":   str,       # clean blog topic
-        "keywords": [str],    # target SEO keywords
-        "niche":   str,       # universal niche id
-        "format":  str,       # format matched to horizon
-        "horizon": str,       # '24h', 'week', or 'month'
-        "score":   float,
-    }
+    Dynamically adapts topic selection based on live blog analytics and niche diversification.
     """
     niches_cfg = _load_niches()
     niches = niches_cfg.get("niches", [])
@@ -113,6 +105,18 @@ def select_topics(
     # Load all published titles from DB and caller (e.g. Blogger live API)
     published_titles = list(dict.fromkeys((existing_titles or []) + get_all_published_titles()))
     recent_keywords = set(get_recent_keywords(60))
+
+    # Analytics feedback: analyze past niche distribution
+    past_articles = get_all_articles()
+
+    niche_counts = {}
+    for a in past_articles:
+        niche_id = a.get("niche", "tech_innovation")
+        niche_counts[niche_id] = niche_counts.get(niche_id, 0) + 1
+
+    last_published_niche = past_articles[-1].get("niche") if past_articles else None
+    stats = traffic_stats or {}
+    last_7d_views = stats.get("last_7_days", 0)
 
     # Build competitor word sets for gap analysis
     comp_titles = competitor_analysis.get("recent_titles", [])
@@ -162,6 +166,19 @@ def select_topics(
         kw_penalty = sum(1 for w in topic_words if w in recent_keywords) / max(len(topic_words), 1)
         freshness = 1.0 - (kw_penalty * 0.35)
 
+        # ── Analytics & Niche Rotation Feedback Loop ──────────────────────────
+        analytics_mult = 1.0
+        # If the blog has active traffic, give a small boost to high-traction pillars
+        if last_7d_views > 10 and best_niche in ("tech_innovation", "business_money"):
+            analytics_mult *= 1.10
+        # Avoid consecutive repetition of the exact same niche
+        if best_niche == last_published_niche:
+            analytics_mult *= 0.85
+        # Exploration bonus for under-covered pillars to test new search queries
+        times_covered = niche_counts.get(best_niche, 0)
+        if times_covered < max(len(past_articles) // 4, 2):
+            analytics_mult *= 1.15
+
         # Horizon weight: Give balanced chance to 24h breaking news, weekly teardowns, and monthly breakthroughs
         horizon_boost = {
             "24h": 1.10,    # Fresh daily pulse
@@ -174,7 +191,7 @@ def select_topics(
             gap_score        * 0.30 +
             best_niche_score * 0.20 +
             freshness        * 0.15
-        ) * horizon_boost
+        ) * horizon_boost * analytics_mult
 
         # Target SEO keywords
         niche_data = next((n for n in niches if n["id"] == best_niche), {})

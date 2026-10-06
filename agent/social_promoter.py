@@ -125,3 +125,69 @@ def format_github_step_summary(promotions: list[dict]) -> str:
         lines.append("---\n")
 
     return "\n".join(lines)
+
+
+def ping_search_aggregators(title: str, url: str) -> bool:
+    """
+    Broadcast published blog post URL to search engines and open indexers
+    via Ping-O-Matic (covers Google Blog Search, Weblogs, FeedBurner, Syndic8).
+    100% free and requires no API keys.
+    """
+    try:
+        import urllib.parse
+        import requests
+        ping_url = (
+            f"https://pingomatic.com/ping/?"
+            f"title={urllib.parse.quote(title)}&"
+            f"blogurl={urllib.parse.quote(url)}&"
+            f"rssurl={urllib.parse.quote(url + '/feeds/posts/default')}&"
+            f"chk_weblogscom=on&chk_blogs=on&chk_feedburner=on&chk_syndic8=on"
+        )
+        resp = requests.get(ping_url, timeout=10)
+        logger.info("📡 Ping-O-Matic: broadcasted '%s' to open search indexers (status %d)", title[:45], resp.status_code)
+        return True
+    except Exception as e:
+        logger.warning("Could not ping open search aggregators: %s", e)
+        return False
+
+
+def syndicate_to_devto(article: dict) -> str | None:
+    """
+    Automatically cross-publish article to open-source platform Dev.to
+    if DEVTO_API_KEY is configured in GitHub Secrets / environment.
+    Sets canonical_url to your Blogger post, passing 100% SEO credit to your blog.
+    """
+    api_key = os.getenv("DEVTO_API_KEY", "").strip()
+    if not api_key:
+        return None
+
+    title = article.get("title", "")
+    url = article.get("url", "")
+    body_markdown = article.get("meta_description", "") + f"\n\n👉 **Read the full, in-depth breakdown on TrendPulse Daily:** [{url}]({url})"
+    tags = [t.lower().replace(" ", "").replace("-", "") for t in article.get("labels", []) if t][:4]
+
+    try:
+        import requests
+        devto_url = "https://dev.to/api/articles"
+        headers = {"api-key": api_key, "Content-Type": "application/json"}
+        payload = {
+            "article": {
+                "title": title,
+                "published": True,
+                "body_markdown": body_markdown,
+                "tags": tags or ["technology", "trends"],
+                "canonical_url": url,
+            }
+        }
+        resp = requests.post(devto_url, json=payload, headers=headers, timeout=15)
+        if resp.status_code in (200, 201):
+            devto_post_url = resp.json().get("url", "")
+            logger.info("✅ Auto-syndicated to Dev.to: %s", devto_post_url)
+            return devto_post_url
+        else:
+            logger.warning("Dev.to syndication returned HTTP %d: %s", resp.status_code, resp.text)
+            return None
+    except Exception as e:
+        logger.warning("Error syndicating to Dev.to: %s", e)
+        return None
+

@@ -171,3 +171,10 @@ def get_stats() -> dict:
     """Return summary stats for logging."""
     data = _load()
     return data.get("stats", {})
+
+
+def get_all_articles() -> list[dict]:
+    """Return all recorded article objects with metadata and niches."""
+    data = _load()
+    return data.get("articles", [])
+
