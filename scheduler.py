@@ -240,6 +240,11 @@ def run() -> int:
                 logger.warning("Notification error: %s", e)
         else:
             logger.warning("❌ Candidate %d failed to publish.", cand_idx)
+            # If Blogger credentials are completely invalid, break early to prevent burning Gemini quota
+            from agent.publisher import _get_credentials
+            if not _get_credentials():
+                logger.error("Blogger authentication failed. Aborting run to protect API quota.")
+                break
 
         if published_count < target_count and cand_idx < len(candidate_pool):
             time.sleep(10)
