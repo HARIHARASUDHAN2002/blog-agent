@@ -151,11 +151,43 @@ def ping_search_aggregators(title: str, url: str) -> bool:
         return False
 
 
+def _html_to_markdown(html_str: str) -> str:
+    """Simple, dependency-free converter from article HTML to clean Dev.to Markdown."""
+    if not html_str:
+        return ""
+    import re
+    text = html_str
+    # Convert headings
+    text = re.sub(r'<h1[^>]*>(.*?)</h1>', r'# \1\n\n', text, flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(r'<h2[^>]*>(.*?)</h2>', r'\n\n## \1\n\n', text, flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(r'<h3[^>]*>(.*?)</h3>', r'\n\n### \1\n\n', text, flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(r'<h4[^>]*>(.*?)</h4>', r'\n\n#### \1\n\n', text, flags=re.DOTALL | re.IGNORECASE)
+    # Convert lists
+    text = re.sub(r'<li[^>]*>(.*?)</li>', r'* \1\n', text, flags=re.DOTALL | re.IGNORECASE)
+    # Convert formatting
+    text = re.sub(r'<strong[^>]*>(.*?)</strong>', r'**\1**', text, flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(r'<b[^>]*>(.*?)</b>', r'**\1**', text, flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(r'<em[^>]*>(.*?)</em>', r'*\1*', text, flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(r'<i[^>]*>(.*?)</i>', r'*\1*', text, flags=re.DOTALL | re.IGNORECASE)
+    # Convert links
+    text = re.sub(r'<a\s+[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>', r'[\2](\1)', text, flags=re.DOTALL | re.IGNORECASE)
+    # Paragraphs and line breaks
+    text = re.sub(r'<p[^>]*>', r'', text, flags=re.IGNORECASE)
+    text = re.sub(r'</p>', r'\n\n', text, flags=re.IGNORECASE)
+    text = re.sub(r'<br\s*/?>', r'\n', text, flags=re.IGNORECASE)
+    # Strip any remaining HTML tags (table markup, divs, spans)
+    text = re.sub(r'<[^>]+>', '', text)
+    # Collapse excess whitespace
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    return text.strip()
+
+
 def syndicate_to_devto(article: dict) -> str | None:
     """
     Automatically cross-publish article to open-source platform Dev.to
     if DEVTO_API_KEY is configured in GitHub Secrets / environment.
     Sets canonical_url to your Blogger post, passing 100% SEO credit to your blog.
+    Posts the full article body in Markdown to comply with Dev.to quality standards.
     """
     api_key = os.getenv("DEVTO_API_KEY", "").strip()
     if not api_key:
@@ -163,8 +195,26 @@ def syndicate_to_devto(article: dict) -> str | None:
 
     title = article.get("title", "")
     url = article.get("url", "")
-    body_markdown = article.get("meta_description", "") + f"\n\n👉 **Read the full, in-depth breakdown on TrendPulse Daily:** [{url}]({url})"
-    tags = [t.lower().replace(" ", "").replace("-", "") for t in article.get("labels", []) if t][:4]
+
+    # Prefer raw article body; fallback to html_content or meta_description
+    raw_html = article.get("raw_content") or article.get("html_content") or ""
+    converted_body = _html_to_markdown(raw_html)
+
+    if len(converted_body) > 300:
+        # Full long-form markdown article with clean attribution
+        body_markdown = f"{converted_body}\n\n---\n\n*Originally published on [{BLOG_NAME}]({url})*"
+    else:
+        meta = article.get("meta_description", "")
+        body_markdown = f"{meta}\n\n---\n\n*Read the comprehensive breakdown on [{BLOG_NAME}]({url})*"
+
+    # Prepare 1-4 lowercase alphanumeric tags (Dev.to requirement)
+    clean_tags = []
+    for tag in article.get("labels", []) + article.get("keywords", []):
+        cleaned = "".join(c for c in tag.lower() if c.isalnum())
+        if cleaned and len(cleaned) <= 20 and cleaned not in clean_tags:
+            clean_tags.append(cleaned)
+        if len(clean_tags) >= 4:
+            break
 
     try:
         import requests
@@ -175,14 +225,14 @@ def syndicate_to_devto(article: dict) -> str | None:
                 "title": title,
                 "published": True,
                 "body_markdown": body_markdown,
-                "tags": tags or ["technology", "trends"],
+                "tags": clean_tags or ["technology", "ai"],
                 "canonical_url": url,
             }
         }
-        resp = requests.post(devto_url, json=payload, headers=headers, timeout=15)
+        resp = requests.post(devto_url, json=payload, headers=headers, timeout=20)
         if resp.status_code in (200, 201):
             devto_post_url = resp.json().get("url", "")
-            logger.info("✅ Auto-syndicated to Dev.to: %s", devto_post_url)
+            logger.info("✅ Auto-syndicated full article to Dev.to: %s", devto_post_url)
             return devto_post_url
         else:
             logger.warning("Dev.to syndication returned HTTP %d: %s", resp.status_code, resp.text)

@@ -382,6 +382,9 @@ def generate_article(
         logger.warning("Article too short (%d words) for: %s", word_count, topic["topic"])
         return None
 
+    # Preserve the core article body before wrapping in Blogger HTML template
+    article_data["raw_content"] = html
+
     # Build full HTML with header/footer
     full_html = _build_full_html(article_data, topic, slot=slot)
     article_data["html_content"] = full_html
