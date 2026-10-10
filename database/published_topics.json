@@ -421,10 +421,21 @@
         "investing"
       ],
       "published_at": "2026-10-10T14:41:51.753937+00:00"
+    },
+    {
+      "title": "Inflation and Interest Rates: What It Means for Your Money",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/10/inflation-and-interest-rates-what-it.html",
+      "niche": "business_money",
+      "keywords": [
+        "business",
+        "money",
+        "investing"
+      ],
+      "published_at": "2026-10-10T18:42:25.163038+00:00"
     }
   ],
   "stats": {
-    "total": 35,
-    "last_run": "2026-10-10T14:41:51.753959+00:00"
+    "total": 36,
+    "last_run": "2026-10-10T18:42:25.163054+00:00"
   }
 }
