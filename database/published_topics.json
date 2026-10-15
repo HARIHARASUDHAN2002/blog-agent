@@ -587,10 +587,21 @@
         "investing"
       ],
       "published_at": "2026-10-15T08:18:56.904528+00:00"
+    },
+    {
+      "title": "OpenCode 2.0: The Technology Reshaping Global Tech Trends",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/10/opencode-20-technology-reshaping-global.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "opencode"
+      ],
+      "published_at": "2026-10-15T13:28:52.091592+00:00"
     }
   ],
   "stats": {
-    "total": 49,
-    "last_run": "2026-10-15T08:18:56.904542+00:00"
+    "total": 50,
+    "last_run": "2026-10-15T13:28:52.091610+00:00"
   }
 }
