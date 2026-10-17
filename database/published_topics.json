@@ -669,10 +669,21 @@
         "tasks"
       ],
       "published_at": "2026-10-17T12:14:01.959307+00:00"
+    },
+    {
+      "title": "DeepSeek-v4.1-Flash-1017: Slashing Model Costs and Latency",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/10/deepseek-v41-flash-1017-slashing-model.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "deepseek-v4.1-flash-1017"
+      ],
+      "published_at": "2026-10-17T17:15:14.061450+00:00"
     }
   ],
   "stats": {
-    "total": 56,
-    "last_run": "2026-10-17T12:14:01.959321+00:00"
+    "total": 57,
+    "last_run": "2026-10-17T17:15:14.061464+00:00"
   }
 }
