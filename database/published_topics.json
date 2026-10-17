@@ -643,10 +643,23 @@
         "tesla"
       ],
       "published_at": "2026-10-16T18:06:58.206668+00:00"
+    },
+    {
+      "title": "Claude Solves ECDSA Curve Origins: Tech Shift Explained",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/10/claude-solves-ecdsa-curve-origins-tech.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "claude",
+        "ecdsa",
+        "curve"
+      ],
+      "published_at": "2026-10-17T07:48:25.858286+00:00"
     }
   ],
   "stats": {
-    "total": 54,
-    "last_run": "2026-10-16T18:06:58.206681+00:00"
+    "total": 55,
+    "last_run": "2026-10-17T07:48:25.858303+00:00"
   }
 }
