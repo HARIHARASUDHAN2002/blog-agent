@@ -680,10 +680,23 @@
         "deepseek-v4.1-flash-1017"
       ],
       "published_at": "2026-10-17T17:15:14.061450+00:00"
+    },
+    {
+      "title": "Why You Could Have Invented Transformers From Memory",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/10/why-you-could-have-invented.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "invented",
+        "transformers",
+        "memory"
+      ],
+      "published_at": "2026-10-18T08:02:04.660236+00:00"
     }
   ],
   "stats": {
-    "total": 57,
-    "last_run": "2026-10-17T17:15:14.061464+00:00"
+    "total": 58,
+    "last_run": "2026-10-18T08:02:04.660251+00:00"
   }
 }
