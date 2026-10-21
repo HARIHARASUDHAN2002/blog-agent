@@ -818,10 +818,23 @@
         "(cve-2026-109618"
       ],
       "published_at": "2026-10-21T13:52:00.360723+00:00"
+    },
+    {
+      "title": "When Eight Bits of Trust Collapsed: eMudhra Keys Cracked",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/10/when-eight-bits-of-trust-collapsed.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "trust;",
+        "cracked",
+        "milliseconds"
+      ],
+      "published_at": "2026-10-21T18:42:36.254072+00:00"
     }
   ],
   "stats": {
-    "total": 68,
-    "last_run": "2026-10-21T13:52:00.360741+00:00"
+    "total": 69,
+    "last_run": "2026-10-21T18:42:36.254089+00:00"
   }
 }
