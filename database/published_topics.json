@@ -805,10 +805,23 @@
         "compromise"
       ],
       "published_at": "2026-10-21T08:40:46.738087+00:00"
+    },
+    {
+      "title": "PHP Security Release: CVE-2026-109618 & Impact",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/10/php-security-release-cve-2026-109618.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "critical",
+        "release",
+        "(cve-2026-109618"
+      ],
+      "published_at": "2026-10-21T13:52:00.360723+00:00"
     }
   ],
   "stats": {
-    "total": 67,
-    "last_run": "2026-10-21T08:40:46.738102+00:00"
+    "total": 68,
+    "last_run": "2026-10-21T13:52:00.360741+00:00"
   }
 }
