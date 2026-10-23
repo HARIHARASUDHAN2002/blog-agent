@@ -891,10 +891,22 @@
         "worldtui:"
       ],
       "published_at": "2026-10-23T13:32:41.505257+00:00"
+    },
+    {
+      "title": "Docker Is Weird: Why Tech Trends Are Shifting Container Value",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/10/docker-is-weird-why-tech-trends-are.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "docker",
+        "weird"
+      ],
+      "published_at": "2026-10-23T18:28:35.678943+00:00"
     }
   ],
   "stats": {
-    "total": 74,
-    "last_run": "2026-10-23T13:32:41.505270+00:00"
+    "total": 75,
+    "last_run": "2026-10-23T18:28:35.678960+00:00"
   }
 }
