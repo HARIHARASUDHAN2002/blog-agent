@@ -938,10 +938,23 @@
         "began"
       ],
       "published_at": "2026-10-24T17:33:30.341430+00:00"
+    },
+    {
+      "title": "Local Wikipedia: Mapping Every Thing Within a 30-Minute Walk",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/10/local-wikipedia-mapping-every-thing.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "things",
+        "wikipedia:",
+        "wikipedia,"
+      ],
+      "published_at": "2026-10-25T08:27:36.146202+00:00"
     }
   ],
   "stats": {
-    "total": 78,
-    "last_run": "2026-10-24T17:33:30.341447+00:00"
+    "total": 79,
+    "last_run": "2026-10-25T08:27:36.146215+00:00"
   }
 }
