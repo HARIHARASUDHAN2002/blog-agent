@@ -1062,10 +1062,23 @@
         "ghostty"
       ],
       "published_at": "2026-10-28T09:42:17.301117+00:00"
+    },
+    {
+      "title": "Python's Experimental JIT Removed: What It Means for Tech",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/10/pythons-experimental-jit-removed-what.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "python's",
+        "experimental",
+        "removed"
+      ],
+      "published_at": "2026-10-28T15:10:09.126688+00:00"
     }
   ],
   "stats": {
-    "total": 88,
-    "last_run": "2026-10-28T09:42:17.301130+00:00"
+    "total": 89,
+    "last_run": "2026-10-28T15:10:09.126705+00:00"
   }
 }
