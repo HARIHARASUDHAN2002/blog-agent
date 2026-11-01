@@ -1205,10 +1205,23 @@
         "unknown"
       ],
       "published_at": "2026-11-01T15:19:42.004803+00:00"
+    },
+    {
+      "title": "HackerTube: YouTube Filtered by Hacker News Tech Trends",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/11/hackertube-youtube-filtered-by-hacker.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "videos",
+        "hackertube:",
+        "youtube"
+      ],
+      "published_at": "2026-11-01T18:58:52.979273+00:00"
     }
   ],
   "stats": {
-    "total": 100,
-    "last_run": "2026-11-01T15:19:42.004818+00:00"
+    "total": 101,
+    "last_run": "2026-11-01T18:58:52.979292+00:00"
   }
 }
