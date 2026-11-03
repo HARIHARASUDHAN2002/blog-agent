@@ -1277,10 +1277,21 @@
         "culture"
       ],
       "published_at": "2026-11-03T16:25:43.383877+00:00"
+    },
+    {
+      "title": "Decoding This Week's Major Trends: A Clear Explainer",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/11/decoding-this-weeks-major-trends-clear.html",
+      "niche": "culture_explainers",
+      "keywords": [
+        "trends",
+        "explainer",
+        "culture"
+      ],
+      "published_at": "2026-11-03T20:44:41.177638+00:00"
     }
   ],
   "stats": {
-    "total": 106,
-    "last_run": "2026-11-03T16:25:43.383891+00:00"
+    "total": 107,
+    "last_run": "2026-11-03T20:44:41.177652+00:00"
   }
 }
