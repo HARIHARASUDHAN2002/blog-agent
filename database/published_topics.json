@@ -1351,10 +1351,23 @@
         "thousand"
       ],
       "published_at": "2026-11-05T16:31:28.160681+00:00"
+    },
+    {
+      "title": "Alpine Linux Security Alert: OpenSSH Bypass Threatens Servers",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/11/alpine-linux-security-alert-openssh.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "linux",
+        "bypass",
+        "security"
+      ],
+      "published_at": "2026-11-05T21:09:18.187390+00:00"
     }
   ],
   "stats": {
-    "total": 112,
-    "last_run": "2026-11-05T16:31:28.160700+00:00"
+    "total": 113,
+    "last_run": "2026-11-05T21:09:18.187409+00:00"
   }
 }
