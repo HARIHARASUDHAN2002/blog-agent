@@ -1364,10 +1364,23 @@
         "security"
       ],
       "published_at": "2026-11-05T21:09:18.187390+00:00"
+    },
+    {
+      "title": "MS Paint Remote Code Execution Vulnerability Shocks Tech",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/11/ms-paint-remote-code-execution.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "execution",
+        "remote",
+        "vulnerability"
+      ],
+      "published_at": "2026-11-06T10:55:32.731722+00:00"
     }
   ],
   "stats": {
-    "total": 113,
-    "last_run": "2026-11-05T21:09:18.187409+00:00"
+    "total": 114,
+    "last_run": "2026-11-06T10:55:32.731735+00:00"
   }
 }
