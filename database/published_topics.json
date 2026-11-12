@@ -1498,10 +1498,21 @@
         "unmapped"
       ],
       "published_at": "2026-11-11T21:32:00.393500+00:00"
+    },
+    {
+      "title": "The AWS Emulator Shift: Why Local-First Cloud Is a Top Tech Trend",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/11/the-aws-emulator-shift-why-local-first.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "emulator"
+      ],
+      "published_at": "2026-11-12T11:14:54.242700+00:00"
     }
   ],
   "stats": {
-    "total": 124,
-    "last_run": "2026-11-11T21:32:00.393514+00:00"
+    "total": 125,
+    "last_run": "2026-11-12T11:14:54.242716+00:00"
   }
 }
