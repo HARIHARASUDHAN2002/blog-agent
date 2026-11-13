@@ -1521,10 +1521,21 @@
         "tutor"
       ],
       "published_at": "2026-11-12T21:30:06.038109+00:00"
+    },
+    {
+      "title": "Rust 1.100 Release: The Technology Trend Reshaping Infrastructure",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/11/rust-1100-release-technology-trend.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "1.100"
+      ],
+      "published_at": "2026-11-13T11:01:27.990651+00:00"
     }
   ],
   "stats": {
-    "total": 126,
-    "last_run": "2026-11-12T21:30:06.038127+00:00"
+    "total": 127,
+    "last_run": "2026-11-13T11:01:27.990667+00:00"
   }
 }
