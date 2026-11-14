@@ -1558,10 +1558,23 @@
         "works"
       ],
       "published_at": "2026-11-13T20:56:12.128497+00:00"
+    },
+    {
+      "title": "FAA Ground Stop Lifted After 4.5 Hours: The Tech Fragility Crisis",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/11/faa-ground-stop-lifted-after-45-hours.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "hours",
+        "issues",
+        "lifted"
+      ],
+      "published_at": "2026-11-14T10:25:56.420297+00:00"
     }
   ],
   "stats": {
-    "total": 129,
-    "last_run": "2026-11-13T20:56:12.128531+00:00"
+    "total": 130,
+    "last_run": "2026-11-14T10:25:56.420313+00:00"
   }
 }
