@@ -1571,10 +1571,23 @@
         "lifted"
       ],
       "published_at": "2026-11-14T10:25:56.420297+00:00"
+    },
+    {
+      "title": "Claude Down? Managing Errors on platform.claude.com",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/11/claude-down-managing-errors-on.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "errors",
+        "platform.claude.com",
+        "claude"
+      ],
+      "published_at": "2026-11-14T19:15:21.007934+00:00"
     }
   ],
   "stats": {
-    "total": 130,
-    "last_run": "2026-11-14T10:25:56.420313+00:00"
+    "total": 131,
+    "last_run": "2026-11-14T19:15:21.007949+00:00"
   }
 }
