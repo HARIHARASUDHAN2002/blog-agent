@@ -1811,10 +1811,23 @@
         "perplexity"
       ],
       "published_at": "2026-11-23T12:39:21.890172+00:00"
+    },
+    {
+      "title": "GLM-5.4: How the First Loop Transformer Rewrites Coding",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/11/glm-54-how-first-loop-transformer.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "glm-5.4:",
+        "coding",
+        "first"
+      ],
+      "published_at": "2026-11-23T20:17:53.781174+00:00"
     }
   ],
   "stats": {
-    "total": 149,
-    "last_run": "2026-11-23T12:39:21.890187+00:00"
+    "total": 150,
+    "last_run": "2026-11-23T20:17:53.781190+00:00"
   }
 }
