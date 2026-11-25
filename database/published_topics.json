@@ -1849,10 +1849,23 @@
         "bonsai"
       ],
       "published_at": "2026-11-25T18:41:04.066533+00:00"
+    },
+    {
+      "title": "1Password Security Incident: Why Identity Is the New Tech Trend",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/11/1password-security-incident-why.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "incident",
+        "security",
+        "1password"
+      ],
+      "published_at": "2026-11-25T23:09:14.640068+00:00"
     }
   ],
   "stats": {
-    "total": 152,
-    "last_run": "2026-11-25T18:41:04.066547+00:00"
+    "total": 153,
+    "last_run": "2026-11-25T23:09:14.640086+00:00"
   }
 }
