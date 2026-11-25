@@ -1837,10 +1837,22 @@
         "agents"
       ],
       "published_at": "2026-11-24T23:33:08.208531+00:00"
+    },
+    {
+      "title": "Ternary Bonsai 2.5 27B: How Low-Bit Silicon Reshapes Tech",
+      "url": "https://ai-incomelab-daily.blogspot.com/2026/11/ternary-bonsai-25-27b-how-low-bit.html",
+      "niche": "tech_innovation",
+      "keywords": [
+        "technology",
+        "tech trends",
+        "ternary",
+        "bonsai"
+      ],
+      "published_at": "2026-11-25T18:41:04.066533+00:00"
     }
   ],
   "stats": {
-    "total": 151,
-    "last_run": "2026-11-24T23:33:08.208545+00:00"
+    "total": 152,
+    "last_run": "2026-11-25T18:41:04.066547+00:00"
   }
 }
